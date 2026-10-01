@@ -1,0 +1,248 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Sensor Telemetry Ingestion & Upload | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Sensor Telemetry CSV Ingestion</h1>
+  <div class="card-subtitle">Validate, preview, and persist external IoT timeseries datasets for real-time monitoring and inference</div>
+</div>
+
+<div class="notice-box">
+  <strong>INGESTION GOVERNANCE</strong> — Uploaded records are persisted to SQLite for monitoring and inference. Model retraining is decoupled and executed offline.
+</div>
+
+<!-- DRAG & DROP ZONE -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <div class="card-title">Upload Sensor Data CSV</div>
+    <span class="badge">Max 5 MB</span>
+  </div>
+
+  <div id="dropZone" style="border:2px dashed var(--border-accent); border-radius:12px; padding:40px 20px; text-align:center; background:rgba(85,223,255,0.02); cursor:pointer; transition:all 0.3s;">
+    <div style="font-size:2.5rem; color:var(--accent); margin-bottom:10px;">☁</div>
+    <div style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin-bottom:6px;">DROP SENSOR CSV HERE</div>
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:16px;">or browse files from your computer</div>
+    <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="handleFileSelect(this.files[0])">
+    <button class="btn btn-secondary" onclick="document.getElementById('csvFileInput').click()">Select CSV</button>
+  </div>
+
+  <!-- PROGRESS WORKFLOW -->
+  <div id="workflowSteps" style="display:flex; justify-content:space-between; margin-top:24px; position:relative;">
+    <div class="step-item" id="step-validating" style="flex:1; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">1. VALIDATING</div>
+      <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); margin-top:6px; border-radius:4px;" class="step-bar"></div>
+    </div>
+    <div class="step-item" id="step-preview" style="flex:1; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">2. PREVIEW</div>
+      <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); margin-top:6px; border-radius:4px;" class="step-bar"></div>
+    </div>
+    <div class="step-item" id="step-valid" style="flex:1; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">3. VALID</div>
+      <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); margin-top:6px; border-radius:4px;" class="step-bar"></div>
+    </div>
+    <div class="step-item" id="step-persist" style="flex:1; text-align:center;">
+      <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">4. PERSIST</div>
+      <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); margin-top:6px; border-radius:4px;" class="step-bar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW & INGESTION STATS -->
+<div id="previewCard" class="card" style="display:none; margin-bottom:24px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Dataset Preview &amp; Validation Summary</div>
+      <div class="card-subtitle" id="uploadSummaryText">Validating schema and data integrity...</div>
+    </div>
+    <span class="badge badge-success" id="validBadge">VALID SCHEMA</span>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div>
+      <div class="stat-label">Total Rows</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--accent);" id="statRowsReceived">0</div>
+    </div>
+    <div>
+      <div class="stat-label">Valid Rows</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--success);" id="statRowsValid">0</div>
+    </div>
+    <div>
+      <div class="stat-label">Persisted Rows</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--success);" id="statRowsPersisted">0</div>
+    </div>
+    <div>
+      <div class="stat-label">Sensors Detected</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--accent);" id="statSensors">--</div>
+    </div>
+  </div>
+
+  <div style="max-height:260px; overflow-y:auto; margin-bottom:14px;">
+    <table class="data-table" id="previewTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Sensor ID</th>
+          <th>Temperature</th>
+          <th>Humidity</th>
+          <th>Ambient</th>
+          <th>Power</th>
+          <th>Compressor</th>
+          <th>Door</th>
+        </tr>
+      </thead>
+      <tbody id="previewTbody">
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div id="statusResultMsg" style="font-size:0.8rem; color:var(--success); font-weight:600;"></div>
+    <div id="uploadActionContainer" style="display:none;">
+      <a id="btnAnalyzeUploaded" href="#" class="btn btn-primary" style="padding:6px 14px; font-size:0.75rem;">
+        ⚡ Run Predictive Analysis On This Sensor →
+      </a>
+    </div>
+  </div>
+  <div id="uploadProvenanceNotice" style="font-size:0.7rem; color:var(--text-muted); margin-top:8px;"></div>
+</div>
+
+<!-- SCHEMA REQUIREMENTS -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">CSV Schema Specification</div>
+    <span class="badge">RFC 4180</span>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Column Name</th><th>Type</th><th>Requirement</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>timestamp</code></td><td>ISO-8601 String</td><td><span class="badge badge-warning">Required</span></td><td>UTC datetime (e.g. <code>2026-02-01T00:00:00+00:00</code>)</td></tr>
+      <tr><td><code>sensor_id</code></td><td>String (Max 64)</td><td><span class="badge badge-warning">Required</span></td><td>Unique sensor identifier (e.g. <code>CC-01</code>)</td></tr>
+      <tr><td><code>temperature</code></td><td>Float (°C)</td><td><span class="badge badge-warning">Required</span></td><td>Chamber temperature in degrees Celsius</td></tr>
+      <tr><td><code>humidity</code></td><td>Float (% RH)</td><td><span class="badge">Optional</span></td><td>Relative humidity percentage</td></tr>
+      <tr><td><code>ambient_temperature</code></td><td>Float (°C)</td><td><span class="badge">Optional</span></td><td>Exterior warehouse ambient temperature</td></tr>
+      <tr><td><code>power_kw</code></td><td>Float (kW)</td><td><span class="badge">Optional</span></td><td>Compressor electrical power draw</td></tr>
+      <tr><td><code>compressor_state</code></td><td>Boolean (0/1)</td><td><span class="badge">Optional</span></td><td>Chamber cooling compressor operational status</td></tr>
+      <tr><td><code>door_open</code></td><td>Boolean (0/1)</td><td><span class="badge">Optional</span></td><td>Refrigeration chamber door open detector</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var dropZone = document.getElementById('dropZone');
+
+dropZone.addEventListener('dragover', function(e){
+  e.preventDefault();
+  dropZone.style.borderColor = 'var(--accent)';
+  dropZone.style.background = 'rgba(85,223,255,0.06)';
+});
+
+dropZone.addEventListener('dragleave', function(){
+  dropZone.style.borderColor = 'var(--border-accent)';
+  dropZone.style.background = 'rgba(85,223,255,0.02)';
+});
+
+dropZone.addEventListener('drop', function(e){
+  e.preventDefault();
+  dropZone.style.borderColor = 'var(--border-accent)';
+  dropZone.style.background = 'rgba(85,223,255,0.02)';
+  if (e.dataTransfer.files.length > 0) {
+    handleFileSelect(e.dataTransfer.files[0]);
+  }
+});
+
+function setStep(stepName) {
+  var steps = ['validating', 'preview', 'valid', 'persist'];
+  var reached = false;
+  steps.forEach(function(s){
+    var el = document.getElementById('step-' + s);
+    var bar = el.querySelector('.step-bar');
+    if (!reached) {
+      bar.style.background = 'var(--success)';
+      el.querySelector('div').style.color = 'var(--text-primary)';
+      if (s === stepName) reached = true;
+    } else {
+      bar.style.background = 'rgba(255,255,255,0.08)';
+      el.querySelector('div').style.color = 'var(--text-muted)';
+    }
+  });
+}
+
+function handleFileSelect(file) {
+  if (!file) return;
+  setStep('validating');
+
+  var formData = new FormData();
+  formData.append('file', file);
+
+  var previewCard = document.getElementById('previewCard');
+  previewCard.style.display = 'block';
+  document.getElementById('uploadSummaryText').textContent = 'Validating ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)...';
+
+  fetch('/api/upload/', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        setStep('persist');
+        document.getElementById('statRowsReceived').textContent = d.rows_received;
+        document.getElementById('statRowsValid').textContent = d.rows_valid;
+        document.getElementById('statRowsPersisted').textContent = d.rows_persisted;
+        var detectedSensor = d.preview && d.preview[0] ? d.preview[0].sensor_id : 'Detected';
+        document.getElementById('statSensors').textContent = detectedSensor;
+        document.getElementById('uploadSummaryText').textContent = 'Successfully validated and persisted ' + d.rows_persisted + ' row(s).';
+        document.getElementById('statusResultMsg').textContent = '✓ Data ingested into SQLite storage. Simulation stream updated.';
+        if (d.provenance) {
+          document.getElementById('uploadProvenanceNotice').textContent = 'Provenance: ' + d.provenance;
+        }
+
+        if (detectedSensor && detectedSensor !== 'Detected') {
+          var container = document.getElementById('uploadActionContainer');
+          var btn = document.getElementById('btnAnalyzeUploaded');
+          if (container && btn) {
+            container.style.display = 'block';
+            btn.href = '/predictions/?sensor=' + encodeURIComponent(detectedSensor);
+            btn.textContent = '⚡ Run Predictive Analysis on ' + detectedSensor + ' →';
+          }
+        }
+
+        var tbody = document.getElementById('previewTbody');
+        tbody.innerHTML = '';
+        if (d.preview && d.preview.length > 0) {
+          d.preview.forEach(function(row){
+            var tr = document.createElement('tr');
+            var hum = row.humidity ? parseFloat(row.humidity).toFixed(1) + '%' : '--';
+            var amb = row.ambient_temperature ? parseFloat(row.ambient_temperature).toFixed(1) + ' °C' : '--';
+            var pwr = row.power_kw ? parseFloat(row.power_kw).toFixed(2) + ' kW' : '--';
+            var comp = (String(row.compressor_state).toLowerCase() === 'true' || row.compressor_state === '1') ? '<span style="color:var(--success)">ON</span>' : '<span style="color:var(--text-muted)">OFF</span>';
+            var door = (String(row.door_open).toLowerCase() === 'true' || row.door_open === '1') ? '<span style="color:var(--danger)">OPEN</span>' : '<span style="color:var(--text-secondary)">CLOSED</span>';
+
+            tr.innerHTML = 
+              '<td><code>' + row.timestamp + '</code></td>' +
+              '<td><strong>' + row.sensor_id + '</strong></td>' +
+              '<td><strong style="color:var(--accent);">' + parseFloat(row.temperature).toFixed(2) + ' °C</strong></td>' +
+              '<td>' + hum + '</td>' +
+              '<td>' + amb + '</td>' +
+              '<td>' + pwr + '</td>' +
+              '<td>' + comp + '</td>' +
+              '<td>' + door + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+      } else {
+        document.getElementById('uploadSummaryText').textContent = 'Validation error: ' + (d.errors ? d.errors.join(', ') : 'Upload failed');
+        document.getElementById('statusResultMsg').style.color = 'var(--danger)';
+        document.getElementById('statusResultMsg').textContent = '✗ ' + (d.errors ? d.errors.join('; ') : 'Schema verification failed.');
+        document.getElementById('validBadge').className = 'badge badge-danger';
+        document.getElementById('validBadge').textContent = 'REJECTED';
+      }
+    })
+    .catch(err => {
+      document.getElementById('uploadSummaryText').textContent = 'Network or server error during upload.';
+    });
+}
+</script>
+{% endblock %}

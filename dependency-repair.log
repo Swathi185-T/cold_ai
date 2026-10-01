@@ -1,0 +1,114 @@
+Collecting pandas
+  Downloading pandas-3.0.6-cp313-cp313-win_amd64.whl.metadata (19 kB)
+Collecting Django
+  Downloading django-6.1.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting djangorestframework
+  Downloading djangorestframework-3.18.1-py3-none-any.whl.metadata (7.8 kB)
+Collecting scikit-learn
+  Downloading scikit_learn-1.9.1-cp313-cp313-win_amd64.whl.metadata (9.3 kB)
+Collecting numpy>=1.26.0 (from pandas)
+  Downloading numpy-2.5.3-cp313-cp313-win_amd64.whl.metadata (6.6 kB)
+Collecting python-dateutil>=2.8.2 (from pandas)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting tzdata (from pandas)
+  Downloading tzdata-2026.4-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting asgiref>=3.9.1 (from Django)
+  Downloading asgiref-3.12.1-py3-none-any.whl.metadata (9.4 kB)
+Collecting sqlparse>=0.5.0 (from Django)
+  Downloading sqlparse-0.6.0-py3-none-any.whl.metadata (6.0 kB)
+Collecting scipy>=1.10.0 (from scikit-learn)
+  Downloading scipy-1.18.1-cp313-cp313-win_amd64.whl.metadata (61 kB)
+Collecting joblib>=1.4.0 (from scikit-learn)
+  Downloading joblib-1.6.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting narwhals>=2.0.1 (from scikit-learn)
+  Downloading narwhals-2.26.0-py3-none-any.whl.metadata (15 kB)
+Collecting threadpoolctl>=3.5.0 (from scikit-learn)
+  Downloading threadpoolctl-3.7.0-py3-none-any.whl.metadata (24 kB)
+Collecting cloudpickle>=3.0 (from joblib>=1.4.0->scikit-learn)
+  Downloading cloudpickle-3.1.2-py3-none-any.whl.metadata (7.1 kB)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Downloading pandas-3.0.6-cp313-cp313-win_amd64.whl (9.6 MB)
+   ---------------------------------------- 9.6/9.6 MB 4.8 MB/s  0:00:01
+Downloading django-6.1.1-py3-none-any.whl (8.4 MB)
+   ---------------------------------------- 8.4/8.4 MB 6.6 MB/s  0:00:01
+Downloading djangorestframework-3.18.1-py3-none-any.whl (901 kB)
+   ---------------------------------------- 901.4/901.4 kB 4.7 MB/s  0:00:00
+Downloading scikit_learn-1.9.1-cp313-cp313-win_amd64.whl (8.2 MB)
+   ---------------------------------------- 8.2/8.2 MB 7.2 MB/s  0:00:01
+Downloading asgiref-3.12.1-py3-none-any.whl (25 kB)
+Downloading joblib-1.6.0-py3-none-any.whl (306 kB)
+Downloading cloudpickle-3.1.2-py3-none-any.whl (22 kB)
+Downloading narwhals-2.26.0-py3-none-any.whl (474 kB)
+Downloading numpy-2.5.3-cp313-cp313-win_amd64.whl (12.6 MB)
+   ---------------------------------------- 12.6/12.6 MB 5.5 MB/s  0:00:02
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Downloading scipy-1.18.1-cp313-cp313-win_amd64.whl (36.6 MB)
+   ---------------------------------------- 36.6/36.6 MB 5.1 MB/s  0:00:07
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading sqlparse-0.6.0-py3-none-any.whl (50 kB)
+Downloading threadpoolctl-3.7.0-py3-none-any.whl (26 kB)
+Downloading tzdata-2026.4-py2.py3-none-any.whl (347 kB)
+Installing collected packages: tzdata, threadpoolctl, sqlparse, six, numpy, narwhals, cloudpickle, asgiref, scipy, python-dateutil, joblib, Django, scikit-learn, pandas, djangorestframework
+  Attempting uninstall: tzdata
+    Found existing installation: tzdata 2026.4
+    Uninstalling tzdata-2026.4:
+      Successfully uninstalled tzdata-2026.4
+  Attempting uninstall: threadpoolctl
+    Found existing installation: threadpoolctl 3.7.0
+    Uninstalling threadpoolctl-3.7.0:
+      Successfully uninstalled threadpoolctl-3.7.0
+  Attempting uninstall: sqlparse
+    Found existing installation: sqlparse 0.6.0
+    Uninstalling sqlparse-0.6.0:
+      Successfully uninstalled sqlparse-0.6.0
+  Attempting uninstall: six
+    Found existing installation: six 1.17.0
+    Uninstalling six-1.17.0:
+      Successfully uninstalled six-1.17.0
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.5.3
+    Uninstalling numpy-2.5.3:
+      Successfully uninstalled numpy-2.5.3
+  Attempting uninstall: narwhals
+    Found existing installation: narwhals 2.26.0
+    Uninstalling narwhals-2.26.0:
+      Successfully uninstalled narwhals-2.26.0
+  Attempting uninstall: cloudpickle
+    Found existing installation: cloudpickle 3.1.2
+    Uninstalling cloudpickle-3.1.2:
+      Successfully uninstalled cloudpickle-3.1.2
+  Attempting uninstall: asgiref
+    Found existing installation: asgiref 3.12.1
+    Uninstalling asgiref-3.12.1:
+      Successfully uninstalled asgiref-3.12.1
+  Attempting uninstall: scipy
+    Found existing installation: scipy 1.18.1
+    Uninstalling scipy-1.18.1:
+      Successfully uninstalled scipy-1.18.1
+  Attempting uninstall: python-dateutil
+    Found existing installation: python-dateutil 2.9.0.post0
+    Uninstalling python-dateutil-2.9.0.post0:
+      Successfully uninstalled python-dateutil-2.9.0.post0
+  Attempting uninstall: joblib
+    Found existing installation: joblib 1.6.0
+    Uninstalling joblib-1.6.0:
+      Successfully uninstalled joblib-1.6.0
+  Attempting uninstall: Django
+    Found existing installation: Django 6.1.1
+    Uninstalling Django-6.1.1:
+      Successfully uninstalled Django-6.1.1
+  Attempting uninstall: scikit-learn
+    Found existing installation: scikit-learn 1.9.1
+    Uninstalling scikit-learn-1.9.1:
+      Successfully uninstalled scikit-learn-1.9.1
+  Attempting uninstall: pandas
+    Found existing installation: pandas 3.0.6
+    Uninstalling pandas-3.0.6:
+      Successfully uninstalled pandas-3.0.6
+  Attempting uninstall: djangorestframework
+    Found existing installation: djangorestframework 3.18.1
+    Uninstalling djangorestframework-3.18.1:
+      Successfully uninstalled djangorestframework-3.18.1
+
+Successfully installed Django-6.1.1 asgiref-3.12.1 cloudpickle-3.1.2 djangorestframework-3.18.1 joblib-1.6.0 narwhals-2.26.0 numpy-2.5.3 pandas-3.0.6 python-dateutil-2.9.0.post0 scikit-learn-1.9.1 scipy-1.18.1 six-1.17.0 sqlparse-0.6.0 threadpoolctl-3.7.0 tzdata-2026.4

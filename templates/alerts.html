@@ -1,0 +1,157 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Cold-Chain Alert Center | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 class="page-title">Cold-Chain Incident &amp; Alert Management</h1>
+    <div class="card-subtitle">Real-time triage of forecast breaches, temperature deviations, and energy anomalies</div>
+  </div>
+  <div>
+    <span class="badge badge-success">Alert Engine Active</span>
+  </div>
+</div>
+
+<!-- STATUS BANNER -->
+<div id="noCriticalBanner" class="notice-box" style="background:rgba(98,230,195,0.06); border-color:rgba(98,230,195,0.25); color:var(--success);">
+  <strong style="color:var(--success);">✓ NO ACTIVE CRITICAL ALERTS</strong> — Telemetry within safe operating margins and no imminent high-severity chamber breaches detected.
+</div>
+
+<!-- ACTIVE ALERTS SECTION -->
+<div style="margin-bottom:28px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <h2 style="font-size:1.1rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;">
+      Active Alerts (<span id="activeCount">1</span>)
+    </h2>
+    <span class="stat-hint">Resolving persists across session cache</span>
+  </div>
+
+  <div id="activeAlertsList" style="display:flex; flex-direction:column; gap:12px;">
+    <!-- Alert 1: Forecast Breach -->
+    {% if data.risk.predicted_breach_time %}
+    <div class="card" id="alert-future-breach" style="border-left:4px solid var(--warning);">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="badge badge-warning">WARNING</span>
+          <strong style="font-size:0.9rem;">Predicted Temperature Horizon Breach</strong>
+          <span style="font-size:0.75rem; color:var(--text-muted);">Sensor {{ data.sensor }}</span>
+        </div>
+        <button class="btn btn-secondary" style="padding:4px 12px; font-size:0.7rem;" onclick="resolveAlert('future-breach')">✓ Mark Resolved</button>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px;">
+        {{ data.risk.risk_reason }} Breach predicted at step t+{{ data.risk.predicted_breach_time }}.
+      </div>
+      <div style="font-size:0.7rem; color:var(--text-muted); display:flex; gap:16px;">
+        <span><strong>Source:</strong> MAD-TCN Forecast Engine</span>
+        <span><strong>Time:</strong> Today, Live Stream</span>
+        <span><strong>Status:</strong> <span style="color:var(--warning);">ACTIVE</span></span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Alert 2: Telemetry Baseline (Non-critical) -->
+    <div class="card" id="alert-telemetry-health" style="border-left:4px solid var(--success);">
+      <div class="card-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="badge badge-success">INFO</span>
+          <strong style="font-size:0.9rem;">IoT Telemetry &amp; Sliding Window Active</strong>
+          <span style="font-size:0.75rem; color:var(--text-muted);">Fleet CC-01..03</span>
+        </div>
+        <button class="btn btn-secondary" style="padding:4px 12px; font-size:0.7rem;" onclick="resolveAlert('telemetry-health')">✓ Acknowledge</button>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px;">
+        60-timestep window buffer filled with valid temperature, humidity, and compressor states. Preprocessing clean.
+      </div>
+      <div style="font-size:0.7rem; color:var(--text-muted); display:flex; gap:16px;">
+        <span><strong>Source:</strong> Core Preprocessing Pipeline</span>
+        <span><strong>Time:</strong> System Startup</span>
+        <span><strong>Status:</strong> <span style="color:var(--success);">NOMINAL</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVED ALERTS SECTION -->
+<div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <h2 style="font-size:1.1rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--text-muted);">
+      Resolved Incidents (<span id="resolvedCount">0</span>)
+    </h2>
+  </div>
+
+  <div id="resolvedAlertsList" style="display:flex; flex-direction:column; gap:12px; opacity:0.75;">
+    <!-- Resolved items populated dynamically -->
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function syncAlertsFromAPI() {
+  fetch('/api/alerts/')
+    .then(r => r.json())
+    .then(d => {
+      if (d.success && d.data) {
+        d.data.forEach(function(item){
+          if (item.resolved) {
+            var card = document.getElementById('alert-' + item.id);
+            if (card && card.parentElement.id === 'activeAlertsList') {
+              moveToResolved(card);
+            }
+          }
+        });
+      }
+    }).catch(e => console.error(e));
+}
+
+function resolveAlert(alertId) {
+  fetch('/api/alerts/' + alertId + '/resolve/', { method: 'POST' })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(d => {
+      if (d.success) {
+        var card = document.getElementById('alert-' + alertId);
+        if (card) moveToResolved(card);
+      } else {
+        alert('Could not resolve alert: ' + (d.error || 'Server error'));
+      }
+    })
+    .catch(err => {
+      alert('Error updating alert state: ' + err.message);
+    });
+}
+
+function moveToResolved(card) {
+  card.style.transition = 'all 0.3s ease';
+  card.style.opacity = '0';
+  setTimeout(function(){
+    var resolvedList = document.getElementById('resolvedAlertsList');
+    var header = card.querySelector('.card-header');
+    var btn = header.querySelector('button');
+    if (btn) btn.remove();
+    var resBadge = document.createElement('span');
+    resBadge.className = 'badge badge-success';
+    resBadge.textContent = 'RESOLVED';
+    header.appendChild(resBadge);
+
+    card.style.borderLeftColor = 'var(--text-muted)';
+    resolvedList.appendChild(card);
+    card.style.opacity = '0.75';
+    updateCounts();
+  }, 300);
+}
+
+function updateCounts() {
+  var active = document.getElementById('activeAlertsList').children.length;
+  var resolved = document.getElementById('resolvedAlertsList').children.length;
+  document.getElementById('activeCount').textContent = active;
+  document.getElementById('resolvedCount').textContent = resolved;
+}
+
+updateCounts();
+syncAlertsFromAPI();
+</script>
+{% endblock %}

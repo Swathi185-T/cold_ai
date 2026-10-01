@@ -1,0 +1,62 @@
+# ColdChain AI Report
+
+```json
+{
+  "data_provenance": "DEMONSTRATION / SIMULATION DATA",
+  "energy_notice": "ENERGY VALUES ARE ESTIMATED/SIMULATED",
+  "sensor": "CC-01",
+  "timestamp": "2026-01-04T00:01:00+00:00",
+  "current_temperature": 4.2,
+  "forecast": [
+    4.252231597900391,
+    5.32106876373291,
+    4.456411361694336,
+    5.178107261657715,
+    4.506052494049072,
+    4.060375690460205,
+    4.316739559173584,
+    4.436816215515137,
+    4.4737701416015625,
+    3.9840614795684814,
+    4.150290489196777,
+    4.4277262687683105,
+    4.502183437347412,
+    4.023724555969238,
+    4.471446514129639
+  ],
+  "risk": {
+    "risk_score": 0.79,
+    "risk_level": "LOW",
+    "risk_reason": "Predicted temperature range 4.0 to 5.3 \u00b0C against 0.0 to 5.0 \u00b0C profile limits.",
+    "predicted_breach_time": 2
+  },
+  "pareto_solutions": [
+    {
+      "cooling_intensity": 0.10000000051690049,
+      "compressor_duty_cycle": 0.20000000123273104,
+      "target_temperature_offset": 0.2048291293748863,
+      "safety_risk": 0.0,
+      "estimated_energy_kwh": 0.07129700049717241
+    }
+  ],
+  "recommendation": {
+    "cooling_intensity": 0.10000000051690049,
+    "compressor_duty_cycle": 0.20000000123273104,
+    "target_temperature_offset": 0.2048291293748863,
+    "safety_risk": 0.0,
+    "estimated_energy_kwh": 0.07129700049717241,
+    "expected_temperature": 4.13599999927471,
+    "explanation": "Selected from pymoo NSGA-II using future risk calculated from the MAD-TCN forecast."
+  },
+  "metrics": {
+    "mae": 1.2500958442687988,
+    "rmse": 1.467206597328186,
+    "dataset": "SIMULATION"
+  },
+  "limitations": [
+    "Simulated data",
+    "CPU model",
+    "No physical actuator validation"
+  ]
+}
+```

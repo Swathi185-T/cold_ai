@@ -1,0 +1,138 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}MAD-TCN Architecture & Performance | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">MAD-TCN Deep Learning Architecture</h1>
+  <div class="card-subtitle">Multi-scale Adaptive Dilated Temporal Convolutional Network for multi-horizon cold-chain forecasting</div>
+</div>
+
+<!-- MODEL SPECIFICATIONS CARDS -->
+<div class="grid-4">
+  <div class="card">
+    <div class="stat-label">Model Checkpoint</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--success); margin:6px 0;">READY</div>
+    <div class="stat-hint">models/mad_tcn_best.pt (~89 KB)</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Execution Device</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">CPU (PyTorch)</div>
+    <div class="stat-hint">Edge/Server CPU inference</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Input / Output Shape</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">(60, 12) → (15,)</div>
+    <div class="stat-hint">60-step history × 12 features</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Held-out MAE / RMSE</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--success); margin:6px 0;">
+      {{ metrics.mae|floatformat:4|default:"1.2501" }} / {{ metrics.rmse|floatformat:4|default:"1.4672" }}
+    </div>
+    <div class="stat-hint">Dataset: {{ metrics.dataset|default:"SIMULATION" }}</div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE DEEP DIVE -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">MAD-TCN Architectural Features</div>
+      <span class="badge">Deep Learning</span>
+    </div>
+    <table class="data-table">
+      <tr>
+        <td><strong>Multi-Scale (M)</strong></td>
+        <td>Captures short-term sensor shocks (door openings) and long-term diurnal cycles simultaneously.</td>
+      </tr>
+      <tr>
+        <td><strong>Adaptive (A)</strong></td>
+        <td>Feature-attention weighting across 12 engineered IoT variables (temperature delta, rolling mean, rolling std, ambient diff).</td>
+      </tr>
+      <tr>
+        <td><strong>Dilated (D)</strong></td>
+        <td>Exponential dilation factors $d \in \{1, 2, 4, 8\}$ expand receptive field without ballooning parameter count.</td>
+      </tr>
+      <tr>
+        <td><strong>Temporal Convolutions (TCN)</strong></td>
+        <td>Strictly causal convolutions prevent lookahead bias; future readings cannot leak into past filters.</td>
+      </tr>
+      <tr>
+        <td><strong>Residual Blocks</strong></td>
+        <td>Weight normalization, ReLU non-linearities, and spatial dropout ensure gradient stability.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">12 Engineered Feature Channels</div>
+      <span class="badge">Input Dimension: 12</span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.75rem;">
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">1. <code>temperature</code> (Chamber °C)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">2. <code>humidity</code> (% RH)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">3. <code>ambient_temperature</code> (°C)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">4. <code>power_kw</code> (Electrical load)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">5. <code>compressor_state</code> (0/1 binary)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">6. <code>door_open</code> (0/1 binary)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">7. <code>temperature_delta</code> (1-step diff)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">8. <code>rolling_mean</code> (5-step window)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">9. <code>rolling_std</code> (Thermal jitter)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">10. <code>temperature_slope</code> (Velocity)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">11. <code>ambient_difference</code> ($T_{amb} - T$)</div>
+      <div style="background:rgba(85,223,255,0.04); padding:8px; border-radius:6px;">12. <code>power_delta</code> (Load trend)</div>
+    </div>
+  </div>
+</div>
+
+<!-- DILATION RECEPTIVE FIELD DIAGRAM -->
+<div class="card" style="margin-top:16px;">
+  <div class="card-header">
+    <div class="card-title">Causal Dilated Convolution Receptive Field</div>
+    <span class="badge">Receptive Field $\ge 60$ steps</span>
+  </div>
+  <div style="text-align:center; padding:16px 0;">
+    <svg viewBox="0 0 700 200" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+      <!-- Output layer -->
+      <text x="50" y="30" fill="#e0ecf5" font-size="11" font-weight="700">Output Layer (15 Steps)</text>
+      <circle cx="200" cy="30" r="6" fill="#62e6c3"/>
+      <circle cx="350" cy="30" r="6" fill="#62e6c3"/>
+      <circle cx="500" cy="30" r="6" fill="#62e6c3"/>
+
+      <!-- Conv Layer 3 (d=4) -->
+      <text x="50" y="80" fill="#7a9ab5" font-size="10">Dilated Conv (d=4)</text>
+      <line x1="200" y1="36" x2="160" y2="74" stroke="rgba(85,223,255,0.3)" stroke-width="1.5"/>
+      <line x1="200" y1="36" x2="240" y2="74" stroke="rgba(85,223,255,0.3)" stroke-width="1.5"/>
+      <circle cx="160" cy="80" r="5" fill="#55dfff"/>
+      <circle cx="240" cy="80" r="5" fill="#55dfff"/>
+      <circle cx="310" cy="80" r="5" fill="#55dfff"/>
+      <circle cx="390" cy="80" r="5" fill="#55dfff"/>
+      <circle cx="460" cy="80" r="5" fill="#55dfff"/>
+      <circle cx="540" cy="80" r="5" fill="#55dfff"/>
+
+      <!-- Conv Layer 2 (d=2) -->
+      <text x="50" y="130" fill="#7a9ab5" font-size="10">Dilated Conv (d=2)</text>
+      <line x1="160" y1="85" x2="140" y2="125" stroke="rgba(85,223,255,0.2)" stroke-width="1"/>
+      <line x1="160" y1="85" x2="180" y2="125" stroke="rgba(85,223,255,0.2)" stroke-width="1"/>
+      <circle cx="140" cy="130" r="4" fill="#55dfff" opacity="0.8"/>
+      <circle cx="180" cy="130" r="4" fill="#55dfff" opacity="0.8"/>
+      <circle cx="220" cy="130" r="4" fill="#55dfff" opacity="0.8"/>
+      <circle cx="260" cy="130" r="4" fill="#55dfff" opacity="0.8"/>
+
+      <!-- Input Layer (d=1) -->
+      <text x="50" y="180" fill="#7a9ab5" font-size="10">Input Matrix (60×12)</text>
+      <circle cx="130" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="150" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="170" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="190" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="210" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="230" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="250" cy="180" r="3" fill="#4a6a85"/>
+      <circle cx="270" cy="180" r="3" fill="#4a6a85"/>
+      <text x="350" y="184" text-anchor="middle" fill="#4a6a85" font-size="11">······ 60 Historical Timesteps ······</text>
+    </svg>
+  </div>
+</div>
+{% endblock %}
