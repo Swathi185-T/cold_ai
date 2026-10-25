@@ -1,0 +1,169 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Cold-Chain Intelligence Reports | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 class="page-title">Research &amp; Audit Report Center</h1>
+    <div class="card-subtitle">Generate and export multi-format forensic reports containing forecast, risk, and optimization logs</div>
+  </div>
+  <div>
+    <button class="btn btn-primary" onclick="generateReports()">⚡ Generate New Report Package</button>
+  </div>
+</div>
+
+<div class="notice-box">
+  <strong>PROVENANCE &amp; AUDITABILITY</strong> — All reports encapsulate raw sensor observations, 15-step MAD-TCN predictions, risk engine assessments, and NSGA-II decision vectors.
+</div>
+
+<!-- REPORT ARTIFACTS TABLE -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Generated Report Files</div>
+      <div class="card-subtitle">Artifacts available in repository <code>reports/</code> directory</div>
+    </div>
+    <span class="badge" id="reportCountBadge">3 Formats Available</span>
+  </div>
+
+  <table class="data-table" id="reportsTable">
+    <thead>
+      <tr>
+        <th>Report Name</th>
+        <th>Format</th>
+        <th>File Status</th>
+        <th>Contents</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="reportsTbody">
+      <tr>
+        <td colspan="5" style="text-align:center; padding:16px; color:var(--text-muted);">
+          Loading available report packages...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- REPORT VIEW MODAL / PREVIEW CARD -->
+<div id="viewerCard" class="card" style="display:none; margin-bottom:24px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title" id="viewerTitle">Report Preview</div>
+      <div class="card-subtitle" id="viewerSubtitle">Inspecting file content</div>
+    </div>
+    <button class="btn btn-secondary" onclick="document.getElementById('viewerCard').style.display='none'">✕ Close</button>
+  </div>
+  <pre id="viewerContent" style="background:#06101a; border:1px solid var(--border-subtle); border-radius:8px; padding:16px; font-size:0.75rem; color:var(--text-primary); max-height:400px; overflow:auto; white-space:pre-wrap; font-family:monospace;"></pre>
+</div>
+
+<!-- AUDIT CONTENT BREAKDOWN -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Included Audit Sections in Each Report</div>
+    <span class="badge">Standards Compliant</span>
+  </div>
+  <div class="grid-3">
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">1. Observational Telemetry</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Latest observed temperature, humidity, electrical power, and compressor states.</div>
+    </div>
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">2. MAD-TCN 15-Step Forecast</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Future chamber temperature trajectory, evaluation metrics (MAE 1.2501, RMSE 1.4672).</div>
+    </div>
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">3. Future Risk Assessment</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Risk severity level, numerical risk score, predicted breach horizon step, safe thresholds.</div>
+    </div>
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">4. NSGA-II Pareto Optimization</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Non-dominated energy vs safety trade-off solutions, decision variables, expected temperature.</div>
+    </div>
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">5. Action Recommendation</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Recommended cooling intensity (%), compressor duty cycle (%), energy cost estimation.</div>
+    </div>
+    <div style="background:rgba(85,223,255,0.03); padding:12px; border-radius:8px;">
+      <div class="stat-label">6. Transparency &amp; Provenance</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">Simulation disclosures, CPU execution notice, hardware validation limitations.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function loadReportList() {
+  fetch('/api/reports/')
+    .then(r => r.json())
+    .then(d => {
+      var tbody = document.getElementById('reportsTbody');
+      if (!tbody || !d.files) return;
+      tbody.innerHTML = '';
+      document.getElementById('reportCountBadge').textContent = d.files.length + ' Formats Available';
+
+      d.files.forEach(function(fname){
+        var ext = fname.split('.').pop().toUpperCase();
+        var desc = ext === 'JSON' ? 'Full structured pipeline state, forecast array, Pareto solutions, metrics'
+                 : ext === 'MD' ? 'Human-readable research documentation with Markdown tables'
+                 : 'Tabular 15-step horizon temperatures, safety margins, and risk scores';
+        var tr = document.createElement('tr');
+        tr.innerHTML = 
+          '<td><strong>' + fname + '</strong></td>' +
+          '<td><span class="badge">' + ext + '</span></td>' +
+          '<td><span style="color:var(--success);">● Ready on Disk</span></td>' +
+          '<td>' + desc + '</td>' +
+          '<td>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="viewReport(\'' + fname + '\')">View</button>' +
+              '<a class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem;" href="/reports/' + fname + '/">Download</a>' +
+            '</div>' +
+          '</td>';
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+    });
+}
+
+function generateReports() {
+  fetch('/api/reports/generate/', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        loadReportList();
+        alert('Report package generated successfully (JSON, Markdown, and CSV).');
+      } else {
+        alert('Failed to generate report package.');
+      }
+    })
+    .catch(err => {
+      alert('Error contacting reports generator.');
+    });
+}
+
+function viewReport(fileName) {
+  fetch('/reports/' + fileName + '/')
+    .then(r => {
+      if (!r.ok) throw new Error('File not found');
+      return r.text();
+    })
+    .then(txt => {
+      document.getElementById('viewerCard').style.display = 'block';
+      document.getElementById('viewerTitle').textContent = 'Viewing: ' + fileName;
+      document.getElementById('viewerSubtitle').textContent = 'Artifact length: ' + txt.length + ' characters';
+      document.getElementById('viewerContent').textContent = txt;
+      document.getElementById('viewerCard').scrollIntoView({ behavior: 'smooth' });
+    })
+    .catch(err => {
+      alert('Unable to load report content: ' + err.message);
+    });
+}
+
+loadReportList();
+</script>
+{% endblock %}

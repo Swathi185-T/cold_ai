@@ -1,0 +1,29 @@
+{
+  "experiment_name": "Thermal_Environmental_Energy_Modeling",
+  "dataset_primary": "Energy Consumption Prediction (Kaggle)",
+  "target_variable": "EnergyConsumption (kWh)",
+  "research_role": "Modeling energy demand as a function of thermal load, humidity, and HVAC operation",
+  "train_samples": 700,
+  "val_samples": 150,
+  "test_samples": 150,
+  "metrics": {
+    "mae_kwh": 4.0994,
+    "rmse_kwh": 4.9602,
+    "mape_pct": 5.309,
+    "r2_score": 0.5866
+  },
+  "feature_coefficients": {
+    "Temperature": 5.6734,
+    "Humidity": -0.5136,
+    "SquareFootage": -0.127,
+    "Occupancy": 1.6003,
+    "HVAC_num": 2.285,
+    "Lighting_num": 1.0234,
+    "RenewableEnergy": 0.7099
+  },
+  "journey_to_zero_correlation": {
+    "outdoor_temperature_correlation": -0.2679,
+    "outdoor_humidity_correlation": 0.0944
+  },
+  "scientific_interpretation": "Strong relationship observed between thermal variables (temperature, HVAC usage) and energy consumption. In Journey to Zero, outdoor temperature exhibits an inverse correlation with heating/cooling seasonal loads. In Building Energy, HVAC activation drives significant energy increases. Note: These datasets represent HVAC building loads and grid demand, which validate multi-factor energy modeling, but do NOT replace physical cold-chain compressor thermodynamics."
+}

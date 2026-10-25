@@ -1,0 +1,254 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Sensor Fleet Management | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">IoT Sensor Fleet Management</h1>
+  <div class="card-subtitle">Active cold chain monitoring telemetry nodes, historical telemetry traces, and zone statistics</div>
+</div>
+
+<!-- FLEET TABLE -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Connected Warehouse & Cold Storage Nodes</div>
+      <div class="card-subtitle">Live telemetry aggregates directly queried from SQLite storage</div>
+    </div>
+    <span class="badge" id="sensorCountBadge">{{ sensor_count|default:"3" }} Registered Sensors</span>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="data-table" id="sensorsTable">
+      <thead>
+        <tr>
+          <th>Sensor ID</th>
+          <th>Location</th>
+          <th>Profile</th>
+          <th>Readings</th>
+          <th>Latest Temp</th>
+          <th>Range (Min / Max)</th>
+          <th>Avg Temp</th>
+          <th>Humidity</th>
+          <th>Ambient</th>
+          <th>Power</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="sensorsTableBody">
+        <tr>
+          <td colspan="12" style="text-align:center; padding:24px; color:var(--text-muted);">
+            Loading real sensor telemetry from database...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SENSOR DETAIL & HISTORY GRAPH -->
+<div class="card" id="sensorDetailCard">
+  <div class="card-header">
+    <div>
+      <div class="card-title" id="detailSensorTitle">Sensor History: CC-01</div>
+      <div class="card-subtitle" id="detailSensorSubtitle">DEMONSTRATION WAREHOUSE · Real Historical Telemetry Readings from Database</div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span class="badge badge-success" id="detailSensorBadge">Target Safe (0–5°C)</span>
+      <button class="btn btn-secondary" id="setGlobalSensorBtn" onclick="activateCurrentSensor()" style="padding:4px 10px; font-size:0.72rem;">Set As Active Node</button>
+    </div>
+  </div>
+
+  <div style="position:relative; width:100%; height:300px;">
+    <canvas id="sensorHistoryCanvas"></canvas>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:8px;">
+    <span id="readingWindowInfo">Historical Readings: Loading verified records from database...</span>
+    <span>Safe Target Profile: 0.00 °C to 5.00 °C</span>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var currentSelectedSensor = new URLSearchParams(window.location.search).get('sensor') || 'CC-01';
+var currentHistoryData = [];
+
+function loadSensorsFleet() {
+  fetch('/api/sensors/')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var tbody = document.getElementById('sensorsTableBody');
+      if (!tbody || !d.results) return;
+      tbody.innerHTML = '';
+      document.getElementById('sensorCountBadge').textContent = d.results.length + ' Registered Sensors';
+
+      d.results.forEach(function(s){
+        var tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        if(s.sensor_id === currentSelectedSensor) {
+          tr.style.background = 'rgba(85,223,255,0.06)';
+        }
+
+        var tempStr = s.latest_temperature !== undefined && s.latest_temperature !== null ? s.latest_temperature.toFixed(2) + ' °C' : 'N/A';
+        var minMaxStr = (s.temp_min !== undefined && s.temp_min !== null) ? s.temp_min.toFixed(1) + ' / ' + s.temp_max.toFixed(1) + ' °C' : 'N/A';
+        var avgStr = (s.temp_avg !== undefined && s.temp_avg !== null) ? s.temp_avg.toFixed(2) + ' °C' : 'N/A';
+        var humStr = (s.latest_humidity !== undefined && s.latest_humidity !== null) ? s.latest_humidity.toFixed(1) + '%' : 'N/A';
+        var ambStr = (s.latest_ambient !== undefined && s.latest_ambient !== null) ? s.latest_ambient.toFixed(1) + ' °C' : 'N/A';
+        var pwrStr = (s.latest_power_kw !== undefined && s.latest_power_kw !== null) ? s.latest_power_kw.toFixed(2) + ' kW' : 'N/A';
+
+        tr.innerHTML = 
+          '<td><strong>' + s.sensor_id + '</strong></td>' +
+          '<td>' + (s.location || 'Cold room') + '</td>' +
+          '<td>' + (s.product_type || 'Food') + '</td>' +
+          '<td>' + (s.reading_count || 0) + '</td>' +
+          '<td><strong style="color:var(--accent);">' + tempStr + '</strong></td>' +
+          '<td>' + minMaxStr + '</td>' +
+          '<td>' + avgStr + '</td>' +
+          '<td>' + humStr + '</td>' +
+          '<td>' + ambStr + '</td>' +
+          '<td>' + pwrStr + '</td>' +
+          '<td><span style="color:var(--success);">● Active</span></td>' +
+          '<td>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn btn-secondary" style="padding:4px 8px; font-size:0.68rem;" onclick="event.stopPropagation(); selectSensor(\'' + s.sensor_id + '\', \'' + (s.location || '') + '\')">View Trace</button>' +
+              '<a href="/dashboard/?sensor=' + s.sensor_id + '" class="btn btn-primary" style="padding:4px 8px; font-size:0.68rem;" onclick="event.stopPropagation();">Analyze</a>' +
+            '</div>' +
+          '</td>';
+
+        tr.onclick = function() {
+          selectSensor(s.sensor_id, s.location);
+        };
+        tbody.appendChild(tr);
+      });
+
+      // Load initial selected sensor
+      selectSensor(currentSelectedSensor, 'Chamber');
+    })
+    .catch(function(err){
+      console.error('Failed to load sensors:', err);
+    });
+}
+
+function selectSensor(sensorId, location) {
+  currentSelectedSensor = sensorId;
+  document.getElementById('detailSensorTitle').textContent = 'Sensor History: ' + sensorId;
+  document.getElementById('detailSensorSubtitle').textContent = (location || 'Node') + ' · Verified Telemetry Reading Trace from Database';
+  document.getElementById('setGlobalSensorBtn').textContent = 'Set ' + sensorId + ' As Active Node';
+
+  fetch('/api/sensors/' + encodeURIComponent(sensorId) + '/history/?limit=40')
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res.success && res.data) {
+        currentHistoryData = res.data;
+        document.getElementById('readingWindowInfo').textContent = 
+          'Showing ' + res.data.length + ' real historical telemetry points from database (' + (res.data[0] ? res.data[0].timestamp.substring(11, 19) : '') + ' to ' + (res.data[res.data.length-1] ? res.data[res.data.length-1].timestamp.substring(11, 19) : '') + ')';
+        drawHistoryChart(res.data);
+      }
+    })
+    .catch(function(e){
+      console.error(e);
+    });
+}
+
+function activateCurrentSensor() {
+  if (window.onGlobalSensorChange) {
+    window.onGlobalSensorChange(currentSelectedSensor);
+  }
+}
+
+function drawHistoryChart(dataPoints) {
+  var canvas = document.getElementById('sensorHistoryCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+  var pad = { top: 25, right: 30, bottom: 35, left: 50 };
+  var cW = W - pad.left - pad.right;
+  var cH = H - pad.top - pad.bottom;
+
+  ctx.fillStyle = '#0a1929';
+  ctx.fillRect(0, 0, W, H);
+
+  if (!dataPoints || !dataPoints.length) {
+    ctx.fillStyle = '#4a6a85';
+    ctx.font = '12px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('No historical readings recorded for this sensor.', W / 2, H / 2);
+    return;
+  }
+
+  var temps = dataPoints.map(function(d){ return d.temperature; });
+  var minT = Math.min(0, Math.min.apply(null, temps) - 0.5);
+  var maxT = Math.max(7.0, Math.max.apply(null, temps) + 0.5);
+
+  function getX(i) {
+    if (dataPoints.length <= 1) return pad.left + cW / 2;
+    return pad.left + (i / (dataPoints.length - 1)) * cW;
+  }
+  function getY(v) {
+    return pad.top + cH - ((v - minT) / (maxT - minT)) * cH;
+  }
+
+  // Safe zone (0 to 5°C)
+  var ySafeTop = Math.max(pad.top, getY(5.0));
+  var ySafeBot = Math.min(pad.top + cH, getY(0.0));
+  ctx.fillStyle = 'rgba(98,230,195,0.06)';
+  ctx.fillRect(pad.left, ySafeTop, cW, ySafeBot - ySafeTop);
+
+  // Safe boundary lines
+  ctx.strokeStyle = 'rgba(98,230,195,0.25)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.left, ySafeTop); ctx.lineTo(pad.left + cW, ySafeTop);
+  ctx.moveTo(pad.left, ySafeBot); ctx.lineTo(pad.left + cW, ySafeBot);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+  for (var g = 0; g <= 4; g++) {
+    var gy = pad.top + (g / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+    var val = maxT - (g / 4) * (maxT - minT);
+    ctx.fillStyle = '#4a6a85';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1) + ' °C', pad.left - 8, gy + 4);
+  }
+
+  // Draw real historical line
+  ctx.beginPath();
+  dataPoints.forEach(function(pt, i){
+    var x = getX(i), y = getY(pt.temperature);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#55dfff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Draw dots
+  dataPoints.forEach(function(pt, i){
+    var x = getX(i), y = getY(pt.temperature);
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = (pt.temperature >= 0 && pt.temperature <= 5.0) ? '#62e6c3' : '#e74c5e';
+    ctx.fill();
+  });
+}
+
+window.addEventListener('resize', function(){
+  if (currentHistoryData && currentHistoryData.length) {
+    drawHistoryChart(currentHistoryData);
+  }
+});
+
+loadSensorsFleet();
+</script>
+{% endblock %}

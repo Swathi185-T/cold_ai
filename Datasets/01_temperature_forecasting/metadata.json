@@ -1,0 +1,31 @@
+{
+    "dataset_name": "IoT Temperature Forecasting (Kaggle Study)",
+    "source": "Kaggle (iot-temperature-forecasting notebook)",
+    "original_path": "D:/COLDCHAIN-AI/Datasets/iot-temperature-forecasting.ipynb",
+    "clean_path": "D:/COLDCHAIN-AI/Datasets/01_temperature_forecasting/iot_temperature_forecasting.ipynb",
+    "rows": 112,
+    "columns": 0,
+    "time_column": "noted_date (in referenced IOT-temp.csv)",
+    "temperature_columns": [
+        "temp (in referenced IOT-temp.csv)"
+    ],
+    "humidity_columns": [],
+    "energy_columns": [],
+    "power_columns": [],
+    "voltage_columns": [],
+    "current_columns": [],
+    "sensor_columns": [
+        "room_id/id",
+        "id"
+    ],
+    "location_columns": [
+        "out/in"
+    ],
+    "anomaly_columns": [],
+    "failure_columns": [],
+    "sampling_interval": "Variable (1-10 minutes, raw IOT-temp.csv)",
+    "data_type": "PUBLIC_ANALYSIS_NOTEBOOK",
+    "research_role": "External baseline methodology study for IoT room temperature forecasting using ESP8266 telemetry.",
+    "cold_chain_relevance": "Analogue only: Models indoor/outdoor ambient temperature, not cold storage chambers or refrigerated transport.",
+    "notes": "Contains 112 notebook cells implementing EDA, HoloViews charts, and ARIMA/Prophet/linear models consuming /kaggle/input/temperature-readings-iot-devices/IOT-temp.csv."
+}

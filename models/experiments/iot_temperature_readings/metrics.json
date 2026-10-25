@@ -1,0 +1,93 @@
+{
+  "experiment_id": "mad_tcn_iot_readings",
+  "dataset_name": "Temperature Readings: IoT Devices (Kaggle)",
+  "data_type": "PUBLIC_DATASET",
+  "model_architecture": "MAD-TCN",
+  "sequence_length": 60,
+  "forecast_horizon": 15,
+  "train_samples": 6060,
+  "val_samples": 1299,
+  "test_samples": 1299,
+  "mae": 0.7576,
+  "rmse": 1.204,
+  "mape": 2.7589,
+  "r2": 0.485,
+  "training_time_seconds": 62.33,
+  "horizon_metrics": [
+    {
+      "step": "t+1",
+      "mae": 0.4543,
+      "rmse": 0.7122
+    },
+    {
+      "step": "t+2",
+      "mae": 0.6665,
+      "rmse": 0.9488
+    },
+    {
+      "step": "t+3",
+      "mae": 0.4932,
+      "rmse": 0.8741
+    },
+    {
+      "step": "t+4",
+      "mae": 0.6262,
+      "rmse": 0.9629
+    },
+    {
+      "step": "t+5",
+      "mae": 0.5631,
+      "rmse": 1.0009
+    },
+    {
+      "step": "t+6",
+      "mae": 0.6486,
+      "rmse": 1.0371
+    },
+    {
+      "step": "t+7",
+      "mae": 0.6504,
+      "rmse": 1.1422
+    },
+    {
+      "step": "t+8",
+      "mae": 0.8359,
+      "rmse": 1.2121
+    },
+    {
+      "step": "t+9",
+      "mae": 0.6899,
+      "rmse": 1.2134
+    },
+    {
+      "step": "t+10",
+      "mae": 0.7594,
+      "rmse": 1.2334
+    },
+    {
+      "step": "t+11",
+      "mae": 0.8494,
+      "rmse": 1.2957
+    },
+    {
+      "step": "t+12",
+      "mae": 0.8954,
+      "rmse": 1.3911
+    },
+    {
+      "step": "t+13",
+      "mae": 1.031,
+      "rmse": 1.488
+    },
+    {
+      "step": "t+14",
+      "mae": 1.0192,
+      "rmse": 1.5273
+    },
+    {
+      "step": "t+15",
+      "mae": 1.1811,
+      "rmse": 1.6244
+    }
+  ]
+}

@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>">
+<title>COLDCHAIN AI — Prediction-Guided Cold Chain Intelligence</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --bg-deep: #06101a;
+  --bg-surface: #0a1929;
+  --bg-panel: rgba(10, 25, 41, 0.8);
+  --border-subtle: rgba(85,223,255,0.07);
+  --border-accent: rgba(85,223,255,0.18);
+  --text-primary: #e0ecf5;
+  --text-secondary: #7a9ab5;
+  --text-muted: #4a6a85;
+  --accent: #55dfff;
+  --accent-dim: rgba(85,223,255,0.12);
+  --success: #62e6c3;
+  --success-dim: rgba(98,230,195,0.10);
+  --warning: #f5a623;
+  --danger: #e74c5e;
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(85,223,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(85,223,255,0.022) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+a { color: var(--accent); text-decoration: none; }
+img { max-width: 100%; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 clamp(1.25rem, 3vw, 2.5rem); position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL REVEAL
+   ═══════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR
+   ═══════════════════════════════════════════════════════════ */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
+  transition: height 0.35s, background 0.35s, box-shadow 0.35s;
+}
+.navbar.scrolled {
+  height: 56px;
+  background: rgba(6,16,26,0.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+.nav-brand {
+  font-size: 1.15rem; font-weight: 800; color: var(--accent);
+  letter-spacing: 0.04em; white-space: nowrap;
+}
+.nav-links { display: flex; align-items: center; gap: clamp(0.75rem, 2vw, 1.5rem); }
+.nav-links a {
+  font-size: 0.8rem; color: var(--text-secondary);
+  letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; color: var(--success); font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.nav-status::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 8px;
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  color: var(--accent) !important; font-size: 0.75rem !important;
+  font-weight: 700 !important; letter-spacing: 0.05em;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.nav-cta:hover {
+  background: rgba(85,223,255,0.2);
+  box-shadow: 0 0 20px rgba(85,223,255,0.15);
+}
+.nav-right { display: flex; align-items: center; gap: clamp(0.75rem, 2vw, 1.5rem); }
+
+/* ═══════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding-top: 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 160px;
+  background: linear-gradient(transparent, var(--bg-deep));
+  pointer-events: none;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+.hero-label {
+  font-size: 0.7rem; letter-spacing: 0.18em; color: var(--accent);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 1rem;
+  opacity: 0; animation: fadeSlideUp 0.8s 0.2s forwards;
+}
+.hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 900; line-height: 1.08;
+  margin-bottom: 1.5rem;
+  opacity: 0; animation: fadeSlideUp 0.8s 0.4s forwards;
+}
+.hero-title .accent { color: var(--accent); }
+.hero-subtitle {
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  color: var(--text-secondary); line-height: 1.7;
+  max-width: 520px; margin-bottom: 2rem;
+  opacity: 0; animation: fadeSlideUp 0.8s 0.6s forwards;
+}
+.hero-buttons {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  opacity: 0; animation: fadeSlideUp 0.8s 0.8s forwards;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px; border-radius: 10px;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; border: none; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary {
+  background: linear-gradient(135deg, #55dfff 0%, #3abae8 100%);
+  color: #06101a;
+  box-shadow: 0 4px 24px rgba(85,223,255,0.25);
+}
+.btn-primary:hover { box-shadow: 0 8px 32px rgba(85,223,255,0.35); }
+.btn-secondary {
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  color: var(--accent);
+}
+.btn-secondary:hover { background: rgba(85,223,255,0.2); }
+.hero-disclosure {
+  font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 600;
+  opacity: 0; animation: fadeSlideUp 0.8s 1s forwards;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero Visual (right side) */
+.hero-visual {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  opacity: 0; animation: fadeSlideUp 1s 0.5s forwards;
+}
+.hero-visual svg { width: 100%; max-width: 320px; height: auto; }
+
+/* Live data badges */
+.hero-data {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  width: 100%; max-width: 320px; margin-top: 16px;
+}
+.hero-data-badge {
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+}
+.hero-data-badge .label {
+  font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-muted);
+  text-transform: uppercase; font-weight: 700;
+}
+.hero-data-badge .value {
+  font-size: 1.2rem; font-weight: 800; color: var(--accent);
+  margin-top: 2px;
+}
+.hero-data-badge .value.green { color: var(--success); }
+.hero-demo-label {
+  font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.12em;
+  text-transform: uppercase; margin-top: 10px; text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION COMMON
+   ═══════════════════════════════════════════════════════════ */
+.section {
+  padding: clamp(4rem, 10vw, 7rem) 0;
+  position: relative;
+}
+.section-label {
+  font-size: 0.7rem; letter-spacing: 0.16em; color: var(--accent);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 0.75rem;
+}
+.section-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 800; line-height: 1.15; margin-bottom: 1rem;
+}
+.section-subtitle {
+  font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+  color: var(--text-secondary); max-width: 640px; line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+.section-divider {
+  width: 60px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  margin-bottom: 2rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE SECTION (Horizontal animated flow)
+   ═══════════════════════════════════════════════════════════ */
+.pipeline-section { overflow: hidden; }
+.pipeline-track {
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; padding: 2rem 0;
+  scrollbar-width: none;
+}
+.pipeline-track::-webkit-scrollbar { display: none; }
+.pipeline-node {
+  flex: 0 0 auto;
+  width: clamp(140px, 15vw, 175px);
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-accent);
+  border-radius: 14px;
+  padding: clamp(16px, 2vw, 24px);
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.pipeline-node:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-dim);
+}
+.pipeline-node .icon {
+  width: 40px; height: 40px; margin: 0 auto 10px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: var(--accent);
+}
+.pipeline-node .title {
+  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.pipeline-node .desc {
+  font-size: 0.68rem; color: var(--text-muted); line-height: 1.4;
+}
+.pipeline-arrow {
+  flex: 0 0 auto;
+  width: clamp(30px, 4vw, 60px);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  height: 40px;
+}
+.pipeline-arrow svg { width: 100%; height: 20px; overflow: visible; }
+
+/* ═══════════════════════════════════════════════════════════
+   PROBLEM SECTION
+   ═══════════════════════════════════════════════════════════ */
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2.5vw, 24px);
+  margin-bottom: 3rem;
+}
+.problem-block {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: clamp(24px, 3vw, 36px);
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.problem-block:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+}
+.problem-num {
+  font-size: 2.5rem; font-weight: 900;
+  color: var(--accent-dim); line-height: 1; margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(85,223,255,0.15), rgba(85,223,255,0.05));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.problem-block h3 {
+  font-size: 1rem; font-weight: 800; margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.problem-block p {
+  font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;
+}
+.problem-flow {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; flex-wrap: wrap;
+  padding: 2rem 0;
+}
+.problem-flow-item {
+  font-size: 0.85rem; font-weight: 700; color: var(--text-primary);
+  padding: 10px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-accent);
+  border-radius: 10px;
+}
+.problem-flow-arrow {
+  color: var(--accent); font-size: 1.2rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOW IT WORKS
+   ═══════════════════════════════════════════════════════════ */
+.works-flow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.works-step {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: clamp(18px, 2.5vw, 28px);
+  position: relative;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.works-step:hover { border-color: var(--border-accent); }
+.works-step .step-icon {
+  width: 44px; height: 44px; margin: 0 auto 12px;
+  border-radius: 12px;
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+}
+.works-step h4 {
+  font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 6px;
+}
+.works-step p {
+  font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;
+}
+.works-connector {
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 0; color: var(--accent); font-size: 1.1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORECAST SECTION
+   ═══════════════════════════════════════════════════════════ */
+.forecast-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: start;
+}
+.forecast-info h3 {
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 800; line-height: 1.2; margin-bottom: 1rem;
+}
+.forecast-info p {
+  font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.forecast-meta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.forecast-meta-item {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 18px;
+}
+.forecast-meta-item .label {
+  font-size: 0.6rem; letter-spacing: 0.12em; color: var(--text-muted);
+  text-transform: uppercase; font-weight: 700;
+}
+.forecast-meta-item .val {
+  font-size: 1.4rem; font-weight: 800; color: var(--accent); margin-top: 2px;
+}
+.forecast-chart-wrap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+}
+.forecast-chart-wrap canvas {
+  width: 100%; height: 320px; display: block;
+  border-radius: 8px;
+}
+.forecast-chart-label {
+  font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.1em;
+  text-transform: uppercase; text-align: center; margin-top: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RISK SECTION
+   ═══════════════════════════════════════════════════════════ */
+.risk-flow {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0; max-width: 500px; margin: 0 auto;
+}
+.risk-node {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 20px 28px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.risk-node:hover { border-color: var(--border-accent); }
+.risk-node .big-val {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 900; color: var(--accent);
+}
+.risk-node .big-val.risk-success { color: var(--success); }
+.risk-node .node-label {
+  font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-muted);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 4px;
+}
+.risk-node .node-detail {
+  font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;
+}
+.risk-arrow {
+  width: 2px; height: 36px;
+  background: linear-gradient(var(--accent), transparent);
+  position: relative;
+}
+.risk-arrow::after {
+  content: '▼'; position: absolute; bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent); font-size: 0.6rem;
+}
+/* Risk meter */
+.risk-meter {
+  width: 100%; max-width: 320px;
+  height: 10px; border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  margin: 12px auto 0; overflow: hidden;
+}
+.risk-meter-fill {
+  height: 100%; border-radius: 10px;
+  background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+  transition: width 1.5s ease;
+  width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NSGA-II / OPTIMIZATION SECTION
+   ═══════════════════════════════════════════════════════════ */
+.opt-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: start;
+}
+.opt-flow {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.opt-node {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: border-color 0.3s;
+}
+.opt-node:hover { border-color: var(--border-accent); }
+.opt-node.highlight {
+  border-color: var(--accent);
+  background: rgba(85,223,255,0.06);
+}
+.opt-arrow {
+  width: 2px; height: 24px;
+  background: linear-gradient(var(--accent), transparent);
+  position: relative;
+}
+.opt-arrow::after {
+  content: '▼'; position: absolute; bottom: -8px; left: 50%;
+  transform: translateX(-50%); color: var(--accent); font-size: 0.55rem;
+}
+.opt-bidir {
+  font-size: 0.8rem; font-weight: 700; color: var(--accent);
+  padding: 6px 0; text-align: center;
+}
+.pareto-chart-wrap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+  padding: 20px;
+}
+.pareto-chart-wrap canvas {
+  width: 100%; height: 340px; display: block;
+  border-radius: 8px;
+}
+.pareto-stats {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  margin-top: 14px;
+}
+.pareto-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.pareto-stat .label {
+  font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-muted);
+  text-transform: uppercase; font-weight: 700;
+}
+.pareto-stat .val {
+  font-size: 1.1rem; font-weight: 800; color: var(--accent); margin-top: 2px;
+}
+.pareto-note {
+  font-size: 0.65rem; color: var(--text-muted); text-align: center;
+  margin-top: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ARCHITECTURE SECTION
+   ═══════════════════════════════════════════════════════════ */
+.arch-container {
+  max-width: 480px; margin: 0 auto;
+}
+.arch-container svg { width: 100%; height: auto; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESEARCH SECTION
+   ═══════════════════════════════════════════════════════════ */
+.research-statement {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.research-statement h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900; line-height: 1.1;
+}
+.research-statement h2 span { color: var(--accent); }
+.research-blocks {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2.5vw, 24px);
+}
+.research-block {
+  text-align: center;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: clamp(24px, 3vw, 40px);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.research-block:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+}
+.research-block .r-icon {
+  width: 52px; height: 52px; margin: 0 auto 14px;
+  border-radius: 14px;
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+.research-block h3 {
+  font-size: 1rem; font-weight: 800; margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.research-block p {
+  font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PREVIEW SECTION
+   ═══════════════════════════════════════════════════════════ */
+.preview-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px; margin-bottom: 2.5rem;
+}
+.preview-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+.preview-card:hover { border-color: var(--border-accent); }
+.preview-card .p-icon {
+  font-size: 1.3rem; margin-bottom: 8px;
+}
+.preview-card h4 {
+  font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 4px;
+}
+.preview-card p {
+  font-size: 0.7rem; color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIMITATIONS
+   ═══════════════════════════════════════════════════════════ */
+.limits-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.limit-item {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 20px;
+}
+.limit-item .label {
+  font-size: 0.65rem; letter-spacing: 0.12em; color: var(--text-muted);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 6px;
+}
+.limit-item .val {
+  font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FINAL CTA
+   ═══════════════════════════════════════════════════════════ */
+.cta-section {
+  text-align: center;
+  padding: clamp(4rem, 10vw, 8rem) 0;
+}
+.cta-section h2 {
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-weight: 900; margin-bottom: 1rem;
+}
+.cta-flow {
+  font-size: 1rem; color: var(--accent); font-weight: 700;
+  letter-spacing: 0.08em; margin-bottom: 2rem;
+}
+.cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════ */
+.footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 3rem 0 2rem;
+}
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: start;
+  flex-wrap: wrap; gap: 2rem;
+}
+.footer-brand {
+  font-size: 1.1rem; font-weight: 800; color: var(--accent);
+  margin-bottom: 6px;
+}
+.footer-tagline {
+  font-size: 0.8rem; color: var(--text-muted); max-width: 280px;
+}
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-links a {
+  font-size: 0.78rem; color: var(--text-secondary);
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--accent); }
+.footer-disclosure {
+  font-size: 0.65rem; color: var(--text-muted);
+  text-align: center; margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; text-align: center; }
+  .hero-subtitle { margin-left: auto; margin-right: auto; }
+  .hero-buttons { justify-content: center; }
+  .hero-visual { order: -1; }
+  .hero-visual svg { max-width: 260px; }
+  .forecast-grid { grid-template-columns: 1fr; }
+  .opt-layout { grid-template-columns: 1fr; }
+  .works-flow { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+}
+@media (max-width: 640px) {
+  .problem-grid { grid-template-columns: 1fr; }
+  .research-blocks { grid-template-columns: 1fr; }
+  .works-flow { grid-template-columns: 1fr; }
+  .pareto-stats { grid-template-columns: 1fr; }
+  .hero-data { grid-template-columns: 1fr 1fr; }
+  .pipeline-node { width: 130px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NO-DATA FALLBACK
+   ═══════════════════════════════════════════════════════════ */
+.no-data-msg {
+  text-align: center; padding: 3rem;
+  background: var(--bg-panel); border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+}
+.no-data-msg h3 { color: var(--text-secondary); margin-bottom: 0.5rem; }
+.no-data-msg p { font-size: 0.85rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     1. NAVBAR
+     ═══════════════════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-brand">COLDCHAIN AI</div>
+  <div class="nav-links">
+    <a href="#hero">Home</a>
+    <a href="#pipeline">Platform</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#forecast">AI Engine</a>
+    <a href="#optimization">Optimization</a>
+    <a href="#research">Research</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">AI ENGINE ONLINE</div>
+    <a href="/dashboard/" class="nav-cta">OPEN CONTROL CENTER →</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     2. HERO SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <div class="hero-label">AI-Driven Cold Chain Intelligence</div>
+        <h1 class="hero-title">
+          PREDICT RISK.<br>
+          OPTIMIZE ENERGY.<br>
+          <span class="accent">PROTECT THE COLD CHAIN.</span>
+        </h1>
+        <p class="hero-subtitle">
+          COLDCHAIN AI combines temporal forecasting, future-risk prediction,
+          and multi-objective optimization to support energy-aware cold-chain
+          decision making.
+        </p>
+        <div class="hero-buttons">
+          <a href="#pipeline" class="btn btn-primary">Explore Platform →</a>
+          <a href="/dashboard/" class="btn btn-secondary">Open Control Center →</a>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.68rem; font-weight:700; color:var(--success); background:rgba(98,230,195,0.08); border:1px solid rgba(98,230,195,0.25); border-radius:99px; padding:3px 10px;">● AI ENGINE ONLINE</span>
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.68rem; font-weight:700; color:var(--accent); background:rgba(85,223,255,0.08); border:1px solid rgba(85,223,255,0.25); border-radius:99px; padding:3px 10px;">● MAD-TCN READY</span>
+          <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.68rem; font-weight:700; color:var(--accent); background:rgba(85,223,255,0.08); border:1px solid rgba(85,223,255,0.25); border-radius:99px; padding:3px 10px;">● NSGA-II READY</span>
+        </div>
+        <div class="hero-disclosure">◆ Demonstration / Simulation Mode</div>
+      </div>
+
+      <!-- HERO VISUAL — Animated Pipeline SVG -->
+      <div class="hero-visual">
+        <svg viewBox="0 0 280 504" xmlns="http://www.w3.org/2000/svg" aria-label="AI pipeline flow: sensors to action">
+          <defs>
+            <linearGradient id="connGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#55dfff" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#55dfff" stop-opacity="0.08"/>
+            </linearGradient>
+          </defs>
+          <!-- Node 1: SENSORS -->
+          <rect x="55" y="16" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(85,223,255,0.22)" stroke-width="1"/>
+          <text x="140" y="43" text-anchor="middle" fill="#55dfff" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">◉  SENSOR NODES</text>
+          <!-- Connector 1→2 -->
+          <line x1="140" y1="60" x2="140" y2="86" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#55dfff" opacity="0.9"><animate attributeName="cy" from="62" to="84" dur="1.6s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.6s" repeatCount="indefinite"/></circle>
+          <!-- Node 2: DATA -->
+          <rect x="55" y="86" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(85,223,255,0.18)" stroke-width="1"/>
+          <text x="140" y="113" text-anchor="middle" fill="#e0ecf5" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">≡  DATA STREAM</text>
+          <!-- Connector 2→3 -->
+          <line x1="140" y1="130" x2="140" y2="156" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#55dfff" opacity="0.9"><animate attributeName="cy" from="132" to="154" dur="1.5s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.5s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.5s" begin="0.3s" repeatCount="indefinite"/></circle>
+          <!-- Node 3: AI ENGINE -->
+          <rect x="55" y="156" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(85,223,255,0.25)" stroke-width="1"/>
+          <text x="140" y="183" text-anchor="middle" fill="#55dfff" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">⚡  AI ENGINE</text>
+          <!-- Connector 3→4 -->
+          <line x1="140" y1="200" x2="140" y2="226" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#62e6c3" opacity="0.9"><animate attributeName="cy" from="202" to="224" dur="1.7s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.7s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.7s" begin="0.6s" repeatCount="indefinite"/></circle>
+          <!-- Node 4: FORECAST -->
+          <rect x="55" y="226" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(98,230,195,0.22)" stroke-width="1"/>
+          <text x="140" y="253" text-anchor="middle" fill="#62e6c3" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">∿  FORECAST</text>
+          <!-- Connector 4→5 -->
+          <line x1="140" y1="270" x2="140" y2="296" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#62e6c3" opacity="0.9"><animate attributeName="cy" from="272" to="294" dur="1.5s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.5s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.5s" begin="0.9s" repeatCount="indefinite"/></circle>
+          <!-- Node 5: RISK -->
+          <rect x="55" y="296" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(245,166,35,0.22)" stroke-width="1"/>
+          <text x="140" y="323" text-anchor="middle" fill="#f5a623" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">△  RISK</text>
+          <!-- Connector 5→6 -->
+          <line x1="140" y1="340" x2="140" y2="366" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#f5a623" opacity="0.9"><animate attributeName="cy" from="342" to="364" dur="1.6s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.6s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.6s" begin="1.2s" repeatCount="indefinite"/></circle>
+          <!-- Node 6: NSGA-II -->
+          <rect x="55" y="366" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(85,223,255,0.22)" stroke-width="1"/>
+          <text x="140" y="393" text-anchor="middle" fill="#55dfff" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">⬡  NSGA-II</text>
+          <!-- Connector 6→7 -->
+          <line x1="140" y1="410" x2="140" y2="436" stroke="url(#connGrad)" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <circle r="2.5" fill="#55dfff" opacity="0.9"><animate attributeName="cy" from="412" to="434" dur="1.4s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="cx" values="140;140" dur="1.4s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.4s" begin="1.5s" repeatCount="indefinite"/></circle>
+          <!-- Node 7: ACTION -->
+          <rect x="55" y="436" width="170" height="44" rx="10" fill="rgba(10,25,41,0.85)" stroke="rgba(98,230,195,0.30)" stroke-width="1.5"/>
+          <text x="140" y="463" text-anchor="middle" fill="#62e6c3" font-size="11.5" font-weight="800" font-family="system-ui" letter-spacing="0.5">✓  ACTION</text>
+        </svg>
+
+        <!-- 3. HERO LIVE DATA BADGES -->
+        {% if has_data %}
+        <div class="hero-data">
+          <div class="hero-data-badge">
+            <div class="label">Current Temp</div>
+            <div class="value">{{ data.current_temperature|floatformat:2 }} °C</div>
+          </div>
+          <div class="hero-data-badge">
+            <div class="label">Future Risk</div>
+            <div class="value green">{{ data.risk.risk_level }}</div>
+          </div>
+          <div class="hero-data-badge">
+            <div class="label">Forecast</div>
+            <div class="value">15 Steps</div>
+          </div>
+          <div class="hero-data-badge">
+            <div class="label">Est. Energy</div>
+            <div class="value">{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</div>
+          </div>
+        </div>
+        <div class="hero-demo-label">● Demo System — Real Pipeline Output</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     4. LIVE AI PIPELINE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section pipeline-section" id="pipeline">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">End-to-End AI Pipeline</div>
+      <div class="section-title">From Sensor Data to Decision</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="pipeline-track reveal">
+      <div class="pipeline-node">
+        <div class="icon">◉</div>
+        <div class="title">Sensor Data</div>
+        <div class="desc">IoT temperature, humidity, power streams</div>
+      </div>
+      <div class="pipeline-arrow"><svg viewBox="0 0 60 20"><line x1="0" y1="10" x2="50" y2="10" stroke="rgba(85,223,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="50,5 60,10 50,15" fill="rgba(85,223,255,0.5)"/></svg></div>
+      <div class="pipeline-node">
+        <div class="icon">⚙</div>
+        <div class="title">Preprocessing</div>
+        <div class="desc">Clean, scale, engineer 12 features</div>
+      </div>
+      <div class="pipeline-arrow"><svg viewBox="0 0 60 20"><line x1="0" y1="10" x2="50" y2="10" stroke="rgba(85,223,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="50,5 60,10 50,15" fill="rgba(85,223,255,0.5)"/></svg></div>
+      <div class="pipeline-node">
+        <div class="icon">⚡</div>
+        <div class="title">MAD-TCN</div>
+        <div class="desc">60×12 input → 15-step forecast</div>
+      </div>
+      <div class="pipeline-arrow"><svg viewBox="0 0 60 20"><line x1="0" y1="10" x2="50" y2="10" stroke="rgba(85,223,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="50,5 60,10 50,15" fill="rgba(85,223,255,0.5)"/></svg></div>
+      <div class="pipeline-node">
+        <div class="icon">△</div>
+        <div class="title">Future Risk</div>
+        <div class="desc">Forecast-derived safety risk scoring</div>
+      </div>
+      <div class="pipeline-arrow"><svg viewBox="0 0 60 20"><line x1="0" y1="10" x2="50" y2="10" stroke="rgba(85,223,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="50,5 60,10 50,15" fill="rgba(85,223,255,0.5)"/></svg></div>
+      <div class="pipeline-node">
+        <div class="icon">⬡</div>
+        <div class="title">NSGA-II</div>
+        <div class="desc">Multi-objective energy/safety optimization</div>
+      </div>
+      <div class="pipeline-arrow"><svg viewBox="0 0 60 20"><line x1="0" y1="10" x2="50" y2="10" stroke="rgba(85,223,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="50,5 60,10 50,15" fill="rgba(85,223,255,0.5)"/></svg></div>
+      <div class="pipeline-node">
+        <div class="icon">✓</div>
+        <div class="title">Action</div>
+        <div class="desc">Recommended cooling parameters</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     5. PROBLEM SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="problem">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">The Challenge</div>
+      <div class="section-title">Why Cold-Chain Management Needs Prediction</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="problem-grid reveal">
+      <div class="problem-block">
+        <div class="problem-num">01</div>
+        <h3>Temperature Risk</h3>
+        <p>Unexpected temperature changes can threaten temperature-sensitive goods in storage and transit.</p>
+      </div>
+      <div class="problem-block">
+        <div class="problem-num">02</div>
+        <h3>Energy Cost</h3>
+        <p>Maintaining safe conditions requires continuous cooling energy — often without awareness of actual demand.</p>
+      </div>
+      <div class="problem-block">
+        <div class="problem-num">03</div>
+        <h3>Reactive Decisions</h3>
+        <p>Current-state monitoring alone does not show what may happen next — or what action to take before it does.</p>
+      </div>
+    </div>
+    <div class="problem-flow reveal">
+      <div class="problem-flow-item">Current State</div>
+      <div class="problem-flow-arrow">→</div>
+      <div class="problem-flow-item">What Happens Next?</div>
+      <div class="problem-flow-arrow">→</div>
+      <div class="problem-flow-item">What Should We Do?</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     6. HOW IT WORKS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">System Pipeline</div>
+      <div class="section-title">How COLDCHAIN AI Thinks</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="works-flow reveal">
+      <div class="works-step">
+        <div class="step-icon">◉</div>
+        <h4>Sensor Data</h4>
+        <p>IoT temperature, humidity, power, compressor, door sensors</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">⚙</div>
+        <h4>Data Processing</h4>
+        <p>Cleaning, interpolation, feature engineering</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">▦</div>
+        <h4>Temporal Window</h4>
+        <p>60-step sliding window × 12 engineered features</p>
+      </div>
+    </div>
+    <div class="works-connector reveal">▼</div>
+    <div class="works-flow reveal">
+      <div class="works-step">
+        <div class="step-icon">⚡</div>
+        <h4>MAD-TCN</h4>
+        <p>Multi-scale adaptive dilated temporal convolution network</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">∿</div>
+        <h4>15-Step Forecast</h4>
+        <p>Predicted future temperature trajectory</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">△</div>
+        <h4>Future Risk</h4>
+        <p>Forecast-derived safety risk score and breach detection</p>
+      </div>
+    </div>
+    <div class="works-connector reveal">▼</div>
+    <div class="works-flow reveal">
+      <div class="works-step">
+        <div class="step-icon">⬡</div>
+        <h4>NSGA-II</h4>
+        <p>pymoo multi-objective optimization guided by future risk</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">⇌</div>
+        <h4>Energy / Safety</h4>
+        <p>Pareto-optimal trade-off between energy cost and safety</p>
+      </div>
+      <div class="works-step">
+        <div class="step-icon">✓</div>
+        <h4>Action</h4>
+        <p>Recommended cooling intensity and compressor parameters</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     7. MAD-TCN FORECAST SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="forecast">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">AI Forecasting</div>
+      <div class="section-title">See the Future Before It Becomes a Problem</div>
+      <div class="section-divider"></div>
+    </div>
+    {% if has_data %}
+    <div class="forecast-grid reveal">
+      <div class="forecast-info">
+        <h3>MAD-TCN<br><span style="color:var(--text-secondary);font-size:0.7em;font-weight:600;">Multi-scale Adaptive Dilated Temporal Convolutional Network</span></h3>
+        <p>The model processes a 60×12 input matrix — 60 timesteps of 12 engineered features — and produces a 15-step temperature forecast.</p>
+        <p>Forecast data is used to estimate future risk <em>before</em> a temperature breach occurs.</p>
+        <div class="forecast-meta">
+          <div class="forecast-meta-item">
+            <div class="label">Input Shape</div>
+            <div class="val">60 × 12</div>
+          </div>
+          <div class="forecast-meta-item">
+            <div class="label">Output</div>
+            <div class="val">15 Steps</div>
+          </div>
+          <div class="forecast-meta-item">
+            <div class="label">MAE</div>
+            <div class="val">{{ metrics.mae|floatformat:4 }}</div>
+          </div>
+          <div class="forecast-meta-item">
+            <div class="label">RMSE</div>
+            <div class="val">{{ metrics.rmse|floatformat:4 }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="forecast-chart-wrap">
+        <canvas id="forecastChart"></canvas>
+        <div class="forecast-chart-label">Simulation / Demonstration Result — {{ metrics.dataset }} Data</div>
+      </div>
+    </div>
+    {% else %}
+    <div class="no-data-msg reveal">
+      <h3>Forecast Visualization</h3>
+      <p>Pipeline data is not currently available. Seed sensor data and reload to view the forecast chart.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     8. FUTURE RISK SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="risk">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Risk Assessment</div>
+      <div class="section-title">From Forecast → Future Risk</div>
+      <div class="section-divider"></div>
+      <div class="section-subtitle">The risk engine evaluates the predicted temperature trajectory against product safety limits — not just the current reading.</div>
+    </div>
+    {% if has_data %}
+    <div class="risk-flow reveal" id="riskFlow">
+      <div class="risk-node">
+        <div class="node-label">Current Temperature</div>
+        <div class="big-val">{{ data.current_temperature|floatformat:2 }} °C</div>
+        <div class="node-detail">Latest observed reading</div>
+      </div>
+      <div class="risk-arrow"></div>
+      <div class="risk-node">
+        <div class="node-label">15-Step MAD-TCN Forecast</div>
+        <div class="big-val" style="font-size:1.2rem;">Predicted Trajectory</div>
+        <div class="node-detail">{{ data.risk.risk_reason }}</div>
+      </div>
+      <div class="risk-arrow"></div>
+      <div class="risk-node">
+        <div class="node-label">Risk Engine</div>
+        <div class="big-val risk-success">{{ data.risk.risk_level }}</div>
+        <div class="risk-meter"><div class="risk-meter-fill" id="riskMeterFill"></div></div>
+        <div class="node-detail">Risk Score: {{ data.risk.risk_score|floatformat:2 }}</div>
+      </div>
+      <div class="risk-arrow"></div>
+      <div class="risk-node">
+        <div class="node-label">Breach Prediction</div>
+        <div class="big-val risk-success">{% if data.risk.predicted_breach_time %}BREACH AT STEP {{ data.risk.predicted_breach_time }}{% else %}NO PREDICTED BREACH{% endif %}</div>
+        <div class="node-detail">Safe range: 0.0 – 5.0 °C (Food profile)</div>
+      </div>
+    </div>
+    {% else %}
+    <div class="no-data-msg reveal">
+      <h3>Risk Visualization</h3>
+      <p>Pipeline data is not currently available.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     9 + 10. NSGA-II OPTIMIZATION + PARETO
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="optimization">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Multi-Objective Optimization</div>
+      <div class="section-title">Prediction-Guided Optimization</div>
+      <div class="section-divider"></div>
+      <div class="section-subtitle">The system does not optimize only from the current sensor state. It uses forecast-derived future risk to guide NSGA-II toward solutions that balance energy and safety.</div>
+    </div>
+    {% if has_data %}
+    <div class="opt-layout reveal">
+      <div class="opt-flow">
+        <div class="opt-node">MAD-TCN Forecast</div>
+        <div class="opt-arrow"></div>
+        <div class="opt-node">Future Risk Score: {{ data.risk.risk_score|floatformat:2 }}</div>
+        <div class="opt-arrow"></div>
+        <div class="opt-node highlight">NSGA-II Optimization</div>
+        <div class="opt-arrow"></div>
+        <div class="opt-bidir">ENERGY ↔ SAFETY</div>
+        <div class="opt-arrow"></div>
+        <div class="opt-node">{{ data.pareto_solutions|length }} Non-Dominated Solution{{ data.pareto_solutions|length|pluralize }}</div>
+        <div class="opt-arrow"></div>
+        <div class="opt-node highlight" style="border-color:var(--success); color:var(--success);">Recommended Action</div>
+      </div>
+      <div>
+        <div class="pareto-chart-wrap">
+          <canvas id="paretoChart"></canvas>
+          <div class="pareto-note">{{ data.pareto_solutions|length }} non-dominated solution{{ data.pareto_solutions|length|pluralize }} · Estimated / Simulated Energy</div>
+        </div>
+        <div class="pareto-stats">
+          <div class="pareto-stat">
+            <div class="label">Cooling Intensity</div>
+            <div class="val">{{ data.recommended_solution.cooling_pct }}%</div>
+          </div>
+          <div class="pareto-stat">
+            <div class="label">Compressor Duty</div>
+            <div class="val">{{ data.recommended_solution.compressor_pct }}%</div>
+          </div>
+          <div class="pareto-stat">
+            <div class="label">Estimated Energy</div>
+            <div class="val">{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</div>
+          </div>
+          <div class="pareto-stat">
+            <div class="label">Safety Risk</div>
+            <div class="val">{{ data.recommended_solution.safety_risk|floatformat:2 }}</div>
+          </div>
+          <div class="pareto-stat">
+            <div class="label">Expected Temperature</div>
+            <div class="val">{{ data.recommended_solution.expected_temperature|floatformat:2 }} °C</div>
+          </div>
+          <div class="pareto-stat">
+            <div class="label">Selected Action</div>
+            <div class="val" style="color:var(--success); font-size:0.85rem;">Prediction-Guided Pareto Optimal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="no-data-msg reveal">
+      <h3>Optimization Visualization</h3>
+      <p>Pipeline data is not currently available.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     11. SYSTEM ARCHITECTURE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="architecture">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">System Design</div>
+      <div class="section-title">System Architecture</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="arch-container reveal">
+      <svg viewBox="0 0 420 620" xmlns="http://www.w3.org/2000/svg" aria-label="System architecture diagram">
+        <defs>
+          <linearGradient id="archGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#55dfff" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#55dfff" stop-opacity="0.06"/>
+          </linearGradient>
+        </defs>
+        <!-- Layer 1: Sensor -->
+        <rect x="35" y="10" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(85,223,255,0.2)" stroke-width="1"/>
+        <text x="210" y="35" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">SENSOR / DATA LAYER</text>
+        <text x="210" y="55" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">IoT streams · temperature · humidity · power · state</text>
+        <!-- Connector -->
+        <line x1="210" y1="70" x2="210" y2="100" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#55dfff"><animate attributeName="cy" from="72" to="98" dur="1.8s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.8s" repeatCount="indefinite"/></circle>
+        <!-- Layer 2: Data Engineering -->
+        <rect x="35" y="100" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(85,223,255,0.15)" stroke-width="1"/>
+        <text x="210" y="125" text-anchor="middle" fill="#e0ecf5" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">DATA ENGINEERING</text>
+        <text x="210" y="145" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">Cleaning · feature engineering · 12-feature vector</text>
+        <!-- Connector -->
+        <line x1="210" y1="160" x2="210" y2="190" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#55dfff"><animate attributeName="cy" from="162" to="188" dur="1.6s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.6s" begin="0.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.6s" begin="0.3s" repeatCount="indefinite"/></circle>
+        <!-- Layer 3: AI Forecasting -->
+        <rect x="35" y="190" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(85,223,255,0.25)" stroke-width="1"/>
+        <text x="210" y="215" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">AI FORECASTING — MAD-TCN</text>
+        <text x="210" y="235" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">60×12 → 15-step temporal forecast · PyTorch</text>
+        <!-- Connector -->
+        <line x1="210" y1="250" x2="210" y2="280" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#62e6c3"><animate attributeName="cy" from="252" to="278" dur="1.7s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.7s" begin="0.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.7s" begin="0.6s" repeatCount="indefinite"/></circle>
+        <!-- Layer 4: Risk Engine -->
+        <rect x="35" y="280" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(245,166,35,0.2)" stroke-width="1"/>
+        <text x="210" y="305" text-anchor="middle" fill="#f5a623" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">FUTURE-RISK ENGINE</text>
+        <text x="210" y="325" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">Forecast-derived risk score · breach prediction</text>
+        <!-- Connector -->
+        <line x1="210" y1="340" x2="210" y2="370" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#f5a623"><animate attributeName="cy" from="342" to="368" dur="1.5s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.5s" begin="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.5s" begin="0.9s" repeatCount="indefinite"/></circle>
+        <!-- Layer 5: Optimization -->
+        <rect x="35" y="370" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(85,223,255,0.22)" stroke-width="1"/>
+        <text x="210" y="395" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">OPTIMIZATION — NSGA-II</text>
+        <text x="210" y="415" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">pymoo · multi-objective · energy / safety Pareto</text>
+        <!-- Connector -->
+        <line x1="210" y1="430" x2="210" y2="460" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#55dfff"><animate attributeName="cy" from="432" to="458" dur="1.6s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.6s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.6s" begin="1.2s" repeatCount="indefinite"/></circle>
+        <!-- Layer 6: Decision Support -->
+        <rect x="35" y="460" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(98,230,195,0.25)" stroke-width="1"/>
+        <text x="210" y="485" text-anchor="middle" fill="#62e6c3" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">DECISION SUPPORT</text>
+        <text x="210" y="505" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">Recommended action · cooling parameters</text>
+        <!-- Connector -->
+        <line x1="210" y1="520" x2="210" y2="550" stroke="url(#archGrad)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle r="2" fill="#62e6c3"><animate attributeName="cy" from="522" to="548" dur="1.5s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="cx" values="210;210" dur="1.5s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.85;1" dur="1.5s" begin="1.5s" repeatCount="indefinite"/></circle>
+        <!-- Layer 7: Django -->
+        <rect x="35" y="550" width="350" height="60" rx="12" fill="rgba(10,25,41,0.9)" stroke="rgba(98,230,195,0.3)" stroke-width="1.5"/>
+        <text x="210" y="575" text-anchor="middle" fill="#62e6c3" font-size="11" font-weight="800" font-family="system-ui" letter-spacing="1">DJANGO CONTROL CENTER</text>
+        <text x="210" y="595" text-anchor="middle" fill="#7a9ab5" font-size="9.5" font-family="system-ui">Dashboard · monitoring · reports · visualization</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     12. RESEARCH CONTRIBUTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="research">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Research Focus</div>
+      <div class="section-title">What Makes This System Different?</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="research-statement reveal">
+      <h2>
+        <span>PREDICTION-GUIDED</span><br>
+        ENERGY-AWARE<br>
+        <span>COLD-CHAIN OPTIMIZATION</span>
+      </h2>
+    </div>
+    <div class="research-blocks reveal">
+      <div class="research-block">
+        <div class="r-icon">∿</div>
+        <h3>Forecast</h3>
+        <p>Predict future temperature trajectory using a temporal convolutional network trained on multi-feature sensor data.</p>
+      </div>
+      <div class="research-block">
+        <div class="r-icon">△</div>
+        <h3>Risk</h3>
+        <p>Estimate future safety risk from the predicted trajectory — identifying potential breaches before they occur.</p>
+      </div>
+      <div class="research-block">
+        <div class="r-icon">⬡</div>
+        <h3>Optimize</h3>
+        <p>Balance safety and energy through multi-objective optimization guided by the forecast-derived risk — not current state alone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     13. PLATFORM PREVIEW
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="preview">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Control Center</div>
+      <div class="section-title">The Application</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="preview-grid reveal">
+      <div class="preview-card"><div class="p-icon">📊</div><h4>Live Monitoring</h4><p>Real-time sensor tracking</p></div>
+      <div class="preview-card"><div class="p-icon">🌡</div><h4>Temperature</h4><p>Current readings &amp; history</p></div>
+      <div class="preview-card"><div class="p-icon">△</div><h4>Risk</h4><p>Future risk assessment</p></div>
+      <div class="preview-card"><div class="p-icon">∿</div><h4>Forecast</h4><p>15-step prediction</p></div>
+      <div class="preview-card"><div class="p-icon">⚡</div><h4>Energy</h4><p>Estimated consumption</p></div>
+      <div class="preview-card"><div class="p-icon">⬡</div><h4>Optimization</h4><p>NSGA-II Pareto solutions</p></div>
+    </div>
+    <div style="text-align:center" class="reveal">
+      <a href="/dashboard/" class="btn btn-primary" style="font-size:1rem; padding:16px 36px;">Open Control Center →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     14. LIMITATIONS / DATA NOTICE
+     ═══════════════════════════════════════════════════════════ -->
+<section class="section" id="limitations">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Transparency</div>
+      <div class="section-title">Current Demonstration Status</div>
+      <div class="section-divider"></div>
+    </div>
+    <div class="limits-grid reveal">
+      <div class="limit-item">
+        <div class="label">Dataset</div>
+        <div class="val">Simulation / demonstration data</div>
+      </div>
+      <div class="limit-item">
+        <div class="label">Energy Values</div>
+        <div class="val">Estimated / simulated — not metered</div>
+      </div>
+      <div class="limit-item">
+        <div class="label">Execution</div>
+        <div class="val">CPU inference (PyTorch)</div>
+      </div>
+      <div class="limit-item">
+        <div class="label">Physical Actuator</div>
+        <div class="val">Not validated — no hardware control</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     15. FINAL CTA
+     ═══════════════════════════════════════════════════════════ -->
+<section class="cta-section reveal">
+  <div class="container">
+    <h2>Ready to Explore the Cold Chain?</h2>
+    <div class="cta-flow">PREDICT → ANALYZE → OPTIMIZE</div>
+    <div class="cta-buttons">
+      <a href="/dashboard/" class="btn btn-primary" style="font-size:1rem; padding:16px 36px;">Open Control Center →</a>
+      <a href="#how-it-works" class="btn btn-secondary" style="font-size:1rem; padding:16px 36px;">View Methodology</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     16. FOOTER
+     ═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">COLDCHAIN AI</div>
+        <div class="footer-tagline">Predict Risk. Optimize Energy. Protect the Cold Chain.</div>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="#pipeline">Platform</a>
+        <a href="#how-it-works">Methodology</a>
+        <a href="#research">Research</a>
+        <a href="/dashboard/">Control Center</a>
+      </div>
+    </div>
+    <div class="footer-disclosure">Demonstration / Simulation System — Energy values are estimated / simulated</div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ─── NAVBAR SCROLL ─── */
+  var navbar = document.getElementById('navbar');
+  var scrolled = false;
+  window.addEventListener('scroll', function() {
+    var s = window.scrollY > 40;
+    if (s !== scrolled) { scrolled = s; navbar.classList.toggle('scrolled', s); }
+  }, { passive: true });
+
+  /* ─── INTERSECTION OBSERVER (scroll reveal) ─── */
+  var reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(function(el) { observer.observe(el); });
+  } else {
+    reveals.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  /* ─── RISK METER ─── */
+  var riskFill = document.getElementById('riskMeterFill');
+  if (riskFill) {
+    var riskScore = {{ data.risk.risk_score|default:"0" }};
+    var riskObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          riskFill.style.width = Math.min(100, Math.max(4, riskScore)) + '%';
+          riskObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    riskObserver.observe(riskFill);
+  }
+
+  /* ─── Check if reduced motion is preferred ─── */
+  var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ═══════════════════════════════════════════════════════
+     FORECAST CHART (Canvas)
+     ═══════════════════════════════════════════════════════ */
+  {% if has_data %}
+  var forecastData = JSON.parse('{{ forecast_json|escapejs }}');
+
+  function drawForecast(animate) {
+    var canvas = document.getElementById('forecastChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    var W = rect.width, H = rect.height;
+    var pad = { top: 30, right: 30, bottom: 40, left: 55 };
+    var cW = W - pad.left - pad.right;
+    var cH = H - pad.top - pad.bottom;
+
+    /* Data range */
+    var vals = forecastData;
+    var lo = Math.min.apply(null, vals.concat([0])) - 1;
+    var hi = Math.max.apply(null, vals.concat([5])) + 1;
+
+    function yPos(v) { return pad.top + cH - ((v - lo) / (hi - lo)) * cH; }
+    function xPos(i) { return pad.left + (i / (vals.length - 1)) * cW; }
+
+    function render(progress) {
+      ctx.clearRect(0, 0, W, H);
+
+      /* Background */
+      ctx.fillStyle = '#0a1929';
+      ctx.fillRect(0, 0, W, H);
+
+      /* Safe zone band (0 – 5 °C) */
+      var safeTop = yPos(5), safeBot = yPos(0);
+      ctx.fillStyle = 'rgba(98,230,195,0.06)';
+      ctx.fillRect(pad.left, safeTop, cW, safeBot - safeTop);
+      ctx.strokeStyle = 'rgba(98,230,195,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(pad.left, safeTop); ctx.lineTo(pad.left + cW, safeTop); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(pad.left, safeBot); ctx.lineTo(pad.left + cW, safeBot); ctx.stroke();
+      ctx.setLineDash([]);
+
+      /* Safe zone label */
+      ctx.fillStyle = 'rgba(98,230,195,0.4)';
+      ctx.font = '9px system-ui';
+      ctx.fillText('SAFE ZONE', pad.left + 6, safeTop + 14);
+
+      /* Grid lines */
+      ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+      ctx.lineWidth = 1;
+      var gridSteps = 5;
+      for (var g = 0; g <= gridSteps; g++) {
+        var gy = pad.top + (g / gridSteps) * cH;
+        ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+      }
+
+      /* Y-axis labels */
+      ctx.fillStyle = '#4a6a85';
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'right';
+      for (var g = 0; g <= gridSteps; g++) {
+        var gy = pad.top + (g / gridSteps) * cH;
+        var gv = hi - (g / gridSteps) * (hi - lo);
+        ctx.fillText(gv.toFixed(1) + '°', pad.left - 8, gy + 4);
+      }
+
+      /* X-axis labels */
+      ctx.textAlign = 'center';
+      for (var i = 0; i < vals.length; i++) {
+        ctx.fillText('t+' + (i + 1), xPos(i), H - pad.bottom + 20);
+      }
+      ctx.fillStyle = '#4a6a85';
+      ctx.font = '10px system-ui';
+      ctx.fillText('Forecast Step', W / 2, H - 6);
+
+      /* Forecast line (animated draw) */
+      var drawCount = animate ? Math.ceil(progress * vals.length) : vals.length;
+      if (drawCount > 1) {
+        ctx.strokeStyle = '#55dfff';
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(xPos(0), yPos(vals[0]));
+        for (var i = 1; i < drawCount; i++) {
+          ctx.lineTo(xPos(i), yPos(vals[i]));
+        }
+        ctx.stroke();
+
+        /* Glow effect */
+        ctx.strokeStyle = 'rgba(85,223,255,0.15)';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(xPos(0), yPos(vals[0]));
+        for (var i = 1; i < drawCount; i++) {
+          ctx.lineTo(xPos(i), yPos(vals[i]));
+        }
+        ctx.stroke();
+      }
+
+      /* Data points */
+      for (var i = 0; i < drawCount; i++) {
+        ctx.beginPath();
+        ctx.arc(xPos(i), yPos(vals[i]), 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#55dfff';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(xPos(i), yPos(vals[i]), 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      }
+
+      /* Title */
+      ctx.fillStyle = '#e0ecf5';
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillText('15-Step Temperature Forecast', pad.left, 18);
+
+      /* Legend */
+      ctx.fillStyle = '#55dfff';
+      ctx.fillRect(W - 150, 10, 12, 3);
+      ctx.fillStyle = '#7a9ab5';
+      ctx.font = '9px system-ui';
+      ctx.fillText('Forecast', W - 134, 15);
+      ctx.fillStyle = 'rgba(98,230,195,0.4)';
+      ctx.fillRect(W - 150, 24, 12, 3);
+      ctx.fillStyle = '#7a9ab5';
+      ctx.fillText('Safe Zone (0–5°C)', W - 134, 29);
+    }
+
+    if (animate && !prefersReduced) {
+      var start = null;
+      var duration = 1200;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min(1, (ts - start) / duration);
+        render(p);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    } else {
+      render(1);
+    }
+  }
+
+  /* Trigger forecast chart on scroll */
+  var forecastCanvas = document.getElementById('forecastChart');
+  if (forecastCanvas) {
+    var chartDrawn = false;
+    var chartObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && !chartDrawn) {
+          chartDrawn = true;
+          drawForecast(true);
+          chartObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    chartObserver.observe(forecastCanvas);
+    window.addEventListener('resize', function() { if (chartDrawn) drawForecast(false); });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     PARETO CHART (Canvas)
+     ═══════════════════════════════════════════════════════ */
+  var paretoData = JSON.parse('{{ pareto_json|escapejs }}');
+
+  function drawPareto() {
+    var canvas = document.getElementById('paretoChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    var W = rect.width, H = rect.height;
+    var pad = { top: 30, right: 30, bottom: 50, left: 65 };
+    var cW = W - pad.left - pad.right;
+    var cH = H - pad.top - pad.bottom;
+
+    /* Background */
+    ctx.fillStyle = '#0a1929';
+    ctx.fillRect(0, 0, W, H);
+
+    var energies = paretoData.map(function(d) { return d.estimated_energy_kwh; });
+    var risks = paretoData.map(function(d) { return d.safety_risk; });
+
+    var eMin = Math.min.apply(null, energies);
+    var eMax = Math.max.apply(null, energies);
+    var rMin = Math.min.apply(null, risks);
+    var rMax = Math.max.apply(null, risks);
+
+    /* Pad ranges */
+    var ePad = Math.max(0.01, (eMax - eMin) * 0.15);
+    var rPad = Math.max(0.5, (rMax - rMin) * 0.15);
+    eMin -= ePad; eMax += ePad;
+    rMin = Math.max(0, rMin - rPad); rMax += rPad;
+    if (eMin === eMax) { eMin -= 0.05; eMax += 0.05; }
+    if (rMin === rMax) { rMin = 0; rMax = Math.max(1, rMax + 1); }
+
+    function xPos(e) { return pad.left + ((e - eMin) / (eMax - eMin)) * cW; }
+    function yPos(r) { return pad.top + cH - ((r - rMin) / (rMax - rMin)) * cH; }
+
+    /* Grid */
+    ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 5; g++) {
+      var gy = pad.top + (g / 5) * cH;
+      ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+      var gx = pad.left + (g / 5) * cW;
+      ctx.beginPath(); ctx.moveTo(gx, pad.top); ctx.lineTo(gx, pad.top + cH); ctx.stroke();
+    }
+
+    /* Axis labels */
+    ctx.fillStyle = '#4a6a85';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    for (var g = 0; g <= 5; g++) {
+      var gy = pad.top + (g / 5) * cH;
+      var gv = rMax - (g / 5) * (rMax - rMin);
+      ctx.fillText(gv.toFixed(1), pad.left - 8, gy + 4);
+    }
+    ctx.textAlign = 'center';
+    for (var g = 0; g <= 5; g++) {
+      var gx = pad.left + (g / 5) * cW;
+      var gv = eMin + (g / 5) * (eMax - eMin);
+      ctx.fillText(gv.toFixed(3), gx, pad.top + cH + 20);
+    }
+
+    /* Axis titles */
+    ctx.fillStyle = '#7a9ab5';
+    ctx.font = '10px system-ui';
+    ctx.fillText('Estimated Energy (kWh)', W / 2, H - 8);
+    ctx.save();
+    ctx.translate(14, H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('Safety Risk', 0, 0);
+    ctx.restore();
+
+    /* Plot points */
+    for (var i = 0; i < paretoData.length; i++) {
+      var px = xPos(paretoData[i].estimated_energy_kwh);
+      var py = yPos(paretoData[i].safety_risk);
+
+      /* Glow */
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(85,223,255,0.12)';
+      ctx.fill();
+
+      /* Point */
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#55dfff';
+      ctx.fill();
+    }
+
+    /* Highlight recommended (first with lowest weighted score) */
+    if (paretoData.length > 0) {
+      var recIdx = 0;
+      var bestScore = Infinity;
+      for (var i = 0; i < paretoData.length; i++) {
+        var maxE = Math.max.apply(null, energies) || 1;
+        var maxR = Math.max.apply(null, risks.map(function(r) { return r + 1e-9; }));
+        var sc = 0.65 * paretoData[i].safety_risk / maxR + 0.35 * paretoData[i].estimated_energy_kwh / maxE;
+        if (sc < bestScore) { bestScore = sc; recIdx = i; }
+      }
+      var rpx = xPos(paretoData[recIdx].estimated_energy_kwh);
+      var rpy = yPos(paretoData[recIdx].safety_risk);
+
+      /* Highlight ring */
+      ctx.beginPath();
+      ctx.arc(rpx, rpy, 10, 0, Math.PI * 2);
+      ctx.strokeStyle = '#62e6c3';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(rpx, rpy, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#62e6c3';
+      ctx.fill();
+
+      /* Label */
+      ctx.fillStyle = '#62e6c3';
+      ctx.font = 'bold 9px system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillText('← SELECTED', rpx + 14, rpy + 4);
+    }
+
+    /* Title */
+    ctx.fillStyle = '#e0ecf5';
+    ctx.font = 'bold 12px system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText('Pareto Front — Energy vs. Safety', pad.left, 18);
+
+    /* Count label */
+    ctx.fillStyle = '#55dfff';
+    ctx.font = 'bold 10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(paretoData.length + ' solution' + (paretoData.length === 1 ? '' : 's'), W - pad.right, 18);
+  }
+
+  var paretoCanvas = document.getElementById('paretoChart');
+  if (paretoCanvas) {
+    var paretoDrawn = false;
+    var paretoObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && !paretoDrawn) {
+          paretoDrawn = true;
+          drawPareto();
+          paretoObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    paretoObserver.observe(paretoCanvas);
+    window.addEventListener('resize', function() { if (paretoDrawn) drawPareto(); });
+  }
+  {% endif %}
+
+})();
+</script>
+</body>
+</html>

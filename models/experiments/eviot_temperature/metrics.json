@@ -1,0 +1,91 @@
+{
+  "experiment_id": "eviot_temperature",
+  "dataset": "EVIoT Predictive Maintenance (Battery Temperature Telemetry)",
+  "data_type": "PUBLIC_DATASET",
+  "model": "MAD-TCN",
+  "train_samples": 10447,
+  "val_samples": 2239,
+  "test_samples": 2239,
+  "mae": 6.1046,
+  "rmse": 8.6461,
+  "mape": 17.0543,
+  "r2": -0.0102,
+  "training_time_seconds": 67.69,
+  "horizon_metrics": [
+    {
+      "step": "t+1",
+      "mae": 6.8438,
+      "rmse": 8.7623
+    },
+    {
+      "step": "t+2",
+      "mae": 5.8551,
+      "rmse": 8.6352
+    },
+    {
+      "step": "t+3",
+      "mae": 6.2732,
+      "rmse": 8.6271
+    },
+    {
+      "step": "t+4",
+      "mae": 5.8691,
+      "rmse": 8.6319
+    },
+    {
+      "step": "t+5",
+      "mae": 6.3002,
+      "rmse": 8.6486
+    },
+    {
+      "step": "t+6",
+      "mae": 6.1626,
+      "rmse": 8.6343
+    },
+    {
+      "step": "t+7",
+      "mae": 5.7616,
+      "rmse": 8.6495
+    },
+    {
+      "step": "t+8",
+      "mae": 6.0812,
+      "rmse": 8.6166
+    },
+    {
+      "step": "t+9",
+      "mae": 6.0702,
+      "rmse": 8.6297
+    },
+    {
+      "step": "t+10",
+      "mae": 6.0285,
+      "rmse": 8.6164
+    },
+    {
+      "step": "t+11",
+      "mae": 6.1178,
+      "rmse": 8.6391
+    },
+    {
+      "step": "t+12",
+      "mae": 6.1142,
+      "rmse": 8.6569
+    },
+    {
+      "step": "t+13",
+      "mae": 5.9176,
+      "rmse": 8.6443
+    },
+    {
+      "step": "t+14",
+      "mae": 6.2005,
+      "rmse": 8.6396
+    },
+    {
+      "step": "t+15",
+      "mae": 5.9738,
+      "rmse": 8.6592
+    }
+  ]
+}

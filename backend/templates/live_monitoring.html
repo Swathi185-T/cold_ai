@@ -1,0 +1,455 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Live IoT Simulation & Monitoring | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 class="page-title">Live IoT Cold-Chain Simulation</h1>
+    <div class="card-subtitle">Real-time telemetry stream from multi-node cold storage sensors with continuous AI forecasting & optimization</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span id="liveStatusBadge" class="badge badge-success">● LIVE SIMULATION</span>
+    <button id="btnStart" class="btn btn-primary" onclick="simControl('start')">▶ Start</button>
+    <button id="btnPause" class="btn btn-secondary" onclick="simControl('pause')">⏸ Pause</button>
+    <button id="btnReset" class="btn btn-danger" onclick="simControl('reset')">↺ Reset</button>
+  </div>
+</div>
+
+<div class="notice-box">
+  <strong>SIMULATION TELEMETRY ENGINE</strong> — Stepping through 12,000 real simulation database records across warehouse nodes CC-01, CC-02, and CC-03.
+</div>
+
+<!-- MULTI-SENSOR CARDS (CC-01, CC-02, CC-03 ALL DYNAMIC) -->
+<div class="grid-3" id="sensorCardsGrid">
+  <!-- SENSOR 01 -->
+  <div class="card" id="card-CC-01">
+    <div class="card-header">
+      <div>
+        <div class="card-title">SENSOR 01 (CC-01)</div>
+        <div class="card-subtitle">Warehouse Zone A · Food Storage</div>
+      </div>
+      <span class="badge badge-success" id="badge-CC-01">ONLINE</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+      <div>
+        <div class="stat-label">Temperature</div>
+        <div class="stat-value" id="temp-CC-01">{{ data.current_temperature|floatformat:2 }} °C</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="stat-label">Future Risk</div>
+        <div style="font-size:1.1rem; font-weight:800; color:var(--success);" id="risk-CC-01">{{ data.risk.risk_level }}</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <tr><td>Humidity</td><td id="hum-CC-01"><strong>--</strong></td></tr>
+      <tr><td>Ambient Temp</td><td id="amb-CC-01"><strong>--</strong></td></tr>
+      <tr><td>Power Load</td><td id="pwr-CC-01"><strong>--</strong></td></tr>
+      <tr><td>Compressor State</td><td id="comp-CC-01"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Door Status</td><td id="door-CC-01"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Timestamp</td><td id="time-CC-01"><span style="color:var(--text-muted);font-size:0.75rem;">Loading...</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SENSOR 02 -->
+  <div class="card" id="card-CC-02">
+    <div class="card-header">
+      <div>
+        <div class="card-title">SENSOR 02 (CC-02)</div>
+        <div class="card-subtitle">Warehouse Zone B · Buffer Cold Room</div>
+      </div>
+      <span class="badge badge-success" id="badge-CC-02">ONLINE</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+      <div>
+        <div class="stat-label">Temperature</div>
+        <div class="stat-value" id="temp-CC-02">-- °C</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="stat-label">Future Risk</div>
+        <div style="font-size:1.1rem; font-weight:800; color:var(--success);" id="risk-CC-02">--</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <tr><td>Humidity</td><td id="hum-CC-02"><strong>--</strong></td></tr>
+      <tr><td>Ambient Temp</td><td id="amb-CC-02"><strong>--</strong></td></tr>
+      <tr><td>Power Load</td><td id="pwr-CC-02"><strong>--</strong></td></tr>
+      <tr><td>Compressor State</td><td id="comp-CC-02"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Door Status</td><td id="door-CC-02"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Timestamp</td><td id="time-CC-02"><span style="color:var(--text-muted);font-size:0.75rem;">Loading...</span></td></tr>
+    </table>
+  </div>
+
+  <!-- SENSOR 03 -->
+  <div class="card" id="card-CC-03">
+    <div class="card-header">
+      <div>
+        <div class="card-title">SENSOR 03 (CC-03)</div>
+        <div class="card-subtitle">Warehouse Zone C · Loading Dock</div>
+      </div>
+      <span class="badge badge-success" id="badge-CC-03">ONLINE</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+      <div>
+        <div class="stat-label">Temperature</div>
+        <div class="stat-value" id="temp-CC-03">-- °C</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="stat-label">Future Risk</div>
+        <div style="font-size:1.1rem; font-weight:800; color:var(--success);" id="risk-CC-03">--</div>
+      </div>
+    </div>
+    <table class="data-table">
+      <tr><td>Humidity</td><td id="hum-CC-03"><strong>--</strong></td></tr>
+      <tr><td>Ambient Temp</td><td id="amb-CC-03"><strong>--</strong></td></tr>
+      <tr><td>Power Load</td><td id="pwr-CC-03"><strong>--</strong></td></tr>
+      <tr><td>Compressor State</td><td id="comp-CC-03"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Door Status</td><td id="door-CC-03"><span style="color:var(--text-muted);">--</span></td></tr>
+      <tr><td>Timestamp</td><td id="time-CC-03"><span style="color:var(--text-muted);font-size:0.75rem;">Loading...</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- LIVE TELEMETRY TIMELINE -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Multi-Node Telemetry Stream Timeline</div>
+      <div class="card-subtitle">Real-time sliding window: CC-01 (Cyan), CC-02 (Emerald), CC-03 (Gold)</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--success); animation:pulse-dot 1.5s infinite;"></span>
+      <span style="font-size:0.75rem; color:var(--success); font-weight:700;">STREAM ACTIVE</span>
+    </div>
+  </div>
+  <div style="position:relative; width:100%; height:260px;">
+    <canvas id="liveTimelineCanvas"></canvas>
+  </div>
+  <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:8px;">
+    <span>Safe Thermal Operating Target: 0.00 °C to 5.00 °C</span>
+    <span id="simStepInfo">Simulation Cursor: Step Active</span>
+  </div>
+</div>
+
+<!-- REAL-TIME AI PIPELINE INSIGHTS (Surfacing Hidden Computation) -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Real-Time AI Pipeline Decision Support</div>
+      <div class="card-subtitle">MAD-TCN continuous forecast, temporal risk evaluation, and NSGA-II recommendation for selected active node</div>
+    </div>
+    <span class="badge" id="aiActiveSensorBadge">Node: CC-01</span>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:0;">
+    <!-- FORECAST SPARKLINE -->
+    <div style="background:var(--bg-surface); padding:16px; border-radius:8px; border:1px solid var(--border-subtle);">
+      <div class="stat-label">MAD-TCN 15-Step Horizon Forecast</div>
+      <div style="height:100px; position:relative; margin-top:10px;">
+        <canvas id="forecastSparkCanvas"></canvas>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:6px;">
+        <span>t+1: <strong id="tPlus1Val" style="color:var(--text-primary);">--</strong></span>
+        <span>t+15: <strong id="tPlus15Val" style="color:var(--text-primary);">--</strong></span>
+      </div>
+    </div>
+
+    <!-- RISK ENGINE METRICS -->
+    <div style="background:var(--bg-surface); padding:16px; border-radius:8px; border:1px solid var(--border-subtle);">
+      <div class="stat-label">Continuous Risk Evaluation</div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:6px;">
+        <div style="font-size:1.8rem; font-weight:800; color:var(--accent);" id="liveRiskScoreVal">--</div>
+        <div id="liveRiskLevelBadge" class="badge badge-success">LOW</div>
+      </div>
+      <div class="meter-bar">
+        <div class="meter-fill" id="liveRiskMeterFill" style="width:10%; background:var(--success);"></div>
+      </div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-top:8px;" id="liveBreachText">
+        Breach Projection: Calculating...
+      </div>
+    </div>
+
+    <!-- NSGA-II ACTION RECOMMENDATION -->
+    <div style="background:var(--bg-surface); padding:16px; border-radius:8px; border:1px solid var(--border-subtle);">
+      <div class="stat-label">NSGA-II Pareto Recommended Action</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <div>
+          <span style="font-size:0.68rem; color:var(--text-muted);">Cooling Intensity</span>
+          <div style="font-size:1.2rem; font-weight:800; color:var(--accent);" id="liveCoolingVal">--%</div>
+        </div>
+        <div>
+          <span style="font-size:0.68rem; color:var(--text-muted);">Compressor Duty</span>
+          <div style="font-size:1.2rem; font-weight:800; color:var(--accent);" id="liveDutyVal">--%</div>
+        </div>
+        <div>
+          <span style="font-size:0.68rem; color:var(--text-muted);">Est. Energy</span>
+          <div style="font-size:1.0rem; font-weight:700; color:var(--text-primary);" id="liveEnergyVal">-- kWh</div>
+        </div>
+        <div>
+          <span style="font-size:0.68rem; color:var(--text-muted);">Expected Temp</span>
+          <div style="font-size:1.0rem; font-weight:700; color:var(--success);" id="liveExpectedTempVal">-- °C</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var simTimer = null;
+var sensorNodes = ['CC-01', 'CC-02', 'CC-03'];
+var activeTargetSensor = new URLSearchParams(window.location.search).get('sensor') || 'CC-01';
+document.getElementById('aiActiveSensorBadge').textContent = 'Node: ' + activeTargetSensor;
+
+// Store timelines per sensor
+var nodeHistory = {
+  'CC-01': [],
+  'CC-02': [],
+  'CC-03': []
+};
+var nodeColors = {
+  'CC-01': '#55dfff',
+  'CC-02': '#62e6c3',
+  'CC-03': '#f5a623'
+};
+
+function simControl(action) {
+  fetch('/api/simulation/' + action + '/', { method: 'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var badge = document.getElementById('liveStatusBadge');
+      if (action === 'start') {
+        badge.textContent = '● SIMULATION RUNNING';
+        badge.className = 'badge badge-success';
+        if (!simTimer) simTimer = setInterval(stepSimulation, 2500);
+      } else if (action === 'pause') {
+        badge.textContent = '⏸ SIMULATION PAUSED';
+        badge.className = 'badge badge-warning';
+        if (simTimer) { clearInterval(simTimer); simTimer = null; }
+      } else if (action === 'reset') {
+        badge.textContent = '↺ SIMULATION RESET';
+        badge.className = 'badge badge-danger';
+        if (simTimer) { clearInterval(simTimer); simTimer = null; }
+        fetchAllSensors();
+      }
+      if (d.data) {
+        document.getElementById('simStepInfo').textContent = 
+          'Simulation Cursor: Step ' + (d.data.simulation_cursor || 0) + ' (' + d.data.simulation_state + ')';
+      }
+    });
+}
+
+function stepSimulation() {
+  fetch('/api/simulation/start/', { method: 'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.data) {
+        document.getElementById('simStepInfo').textContent = 
+          'Simulation Cursor: Step ' + d.data.simulation_cursor + ' (' + d.data.simulation_state + ')';
+      }
+      fetchAllSensors();
+    });
+}
+
+function fetchSensorNode(sensorId) {
+  return fetch('/api/pipeline/?sensor=' + sensorId)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d.success || !d.data) return null;
+      var r = d.data.reading;
+      
+      // Update sensor card
+      var tempEl = document.getElementById('temp-' + sensorId);
+      var humEl = document.getElementById('hum-' + sensorId);
+      var ambEl = document.getElementById('amb-' + sensorId);
+      var pwrEl = document.getElementById('pwr-' + sensorId);
+      var compEl = document.getElementById('comp-' + sensorId);
+      var doorEl = document.getElementById('door-' + sensorId);
+      var riskEl = document.getElementById('risk-' + sensorId);
+      var timeEl = document.getElementById('time-' + sensorId);
+
+      if (tempEl) tempEl.textContent = r.temperature.toFixed(2) + ' °C';
+      if (humEl) humEl.innerHTML = '<strong>' + (r.humidity || 0).toFixed(1) + '%</strong>';
+      if (ambEl) ambEl.innerHTML = '<strong>' + (r.ambient_temperature || 0).toFixed(1) + ' °C</strong>';
+      if (pwrEl) pwrEl.innerHTML = '<strong>' + (r.power_kw || 0).toFixed(2) + ' kW</strong>';
+      if (compEl) compEl.innerHTML = r.compressor_state ? '<span style="color:var(--success);">ACTIVE</span>' : '<span style="color:var(--text-muted);">IDLE</span>';
+      if (doorEl) doorEl.innerHTML = r.door_open ? '<span style="color:var(--danger);">OPEN</span>' : '<span style="color:var(--text-secondary);">CLOSED</span>';
+      if (riskEl) {
+        riskEl.textContent = d.data.risk.risk_level;
+        riskEl.style.color = d.data.risk.risk_level === 'LOW' ? 'var(--success)' : d.data.risk.risk_level === 'MEDIUM' ? 'var(--warning)' : 'var(--danger)';
+      }
+      if (timeEl) {
+        timeEl.innerHTML = '<span style="color:var(--text-muted);font-size:0.75rem;">' + r.timestamp.substring(11, 19) + ' UTC</span>';
+      }
+
+      // Add to timeline
+      if (!nodeHistory[sensorId]) nodeHistory[sensorId] = [];
+      nodeHistory[sensorId].push({ time: r.timestamp.substring(11, 19), temp: r.temperature });
+      if (nodeHistory[sensorId].length > 25) nodeHistory[sensorId].shift();
+
+      // If this is the active target sensor, update AI analysis panel
+      if (sensorId === activeTargetSensor) {
+        updateAIPanel(d.data);
+      }
+      return d.data;
+    }).catch(function(e){ console.error(e); });
+}
+
+function updateAIPanel(data) {
+  // Sparkline
+  if (data.forecast && data.forecast.length) {
+    drawSparkline(data.forecast);
+    document.getElementById('tPlus1Val').textContent = data.forecast[0].toFixed(2) + ' °C';
+    document.getElementById('tPlus15Val').textContent = data.forecast[data.forecast.length - 1].toFixed(2) + ' °C';
+  }
+
+  // Risk
+  var risk = data.risk;
+  if (risk) {
+    document.getElementById('liveRiskScoreVal').textContent = risk.risk_score.toFixed(2);
+    var lvlBadge = document.getElementById('liveRiskLevelBadge');
+    lvlBadge.textContent = risk.risk_level;
+    lvlBadge.className = 'badge ' + (risk.risk_level === 'LOW' ? 'badge-success' : risk.risk_level === 'MEDIUM' ? 'badge-warning' : 'badge-danger');
+    
+    var fill = document.getElementById('liveRiskMeterFill');
+    fill.style.width = Math.min(100, Math.max(5, risk.risk_score)) + '%';
+    fill.style.background = risk.risk_level === 'LOW' ? 'var(--success)' : risk.risk_level === 'MEDIUM' ? 'var(--warning)' : 'var(--danger)';
+
+    document.getElementById('liveBreachText').innerHTML = 
+      risk.predicted_breach_time ? '<strong style="color:var(--warning);">Chamber breach predicted at Step t+' + risk.predicted_breach_time + '</strong>' : '<span style="color:var(--success);">✓ No profile breach predicted within 15-step horizon</span>';
+  }
+
+  // Recommended Action
+  var rec = data.recommended_solution;
+  if (rec) {
+    var cPct = Math.round((rec.cooling_intensity > 1 ? rec.cooling_intensity : rec.cooling_intensity * 100));
+    var dPct = Math.round((rec.compressor_duty_cycle > 1 ? rec.compressor_duty_cycle : rec.compressor_duty_cycle * 100));
+    document.getElementById('liveCoolingVal').textContent = cPct + '%';
+    document.getElementById('liveDutyVal').textContent = dPct + '%';
+    document.getElementById('liveEnergyVal').textContent = rec.estimated_energy_kwh.toFixed(3) + ' kWh';
+    document.getElementById('liveExpectedTempVal').textContent = rec.expected_temperature.toFixed(2) + ' °C';
+  }
+}
+
+function fetchAllSensors() {
+  Promise.all([
+    fetchSensorNode('CC-01'),
+    fetchSensorNode('CC-02'),
+    fetchSensorNode('CC-03')
+  ]).then(function(){
+    drawMultiTimeline();
+  });
+}
+
+function drawMultiTimeline() {
+  var canvas = document.getElementById('liveTimelineCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+  var pad = { top: 20, right: 25, bottom: 35, left: 45 };
+  var cW = W - pad.left - pad.right;
+  var cH = H - pad.top - pad.bottom;
+
+  ctx.fillStyle = '#0a1929';
+  ctx.fillRect(0, 0, W, H);
+
+  // Bounds
+  var minT = 1.0, maxT = 8.0;
+  function getX(i, maxPoints) {
+    if (maxPoints <= 1) return pad.left + cW / 2;
+    return pad.left + (i / (maxPoints - 1)) * cW;
+  }
+  function getY(t) {
+    return pad.top + cH - ((t - minT) / (maxT - minT)) * cH;
+  }
+
+  // Safe zone
+  var ySafeTop = getY(5.0), ySafeBot = getY(2.0);
+  ctx.fillStyle = 'rgba(98,230,195,0.06)';
+  ctx.fillRect(pad.left, ySafeTop, cW, ySafeBot - ySafeTop);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+  for (var g = 0; g <= 4; g++) {
+    var gy = pad.top + (g / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+    var val = maxT - (g / 4) * (maxT - minT);
+    ctx.fillStyle = '#4a6a85';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1) + ' °C', pad.left - 6, gy + 4);
+  }
+
+  // Draw line for each node
+  sensorNodes.forEach(function(sid){
+    var points = nodeHistory[sid];
+    if (!points || points.length < 2) return;
+    ctx.beginPath();
+    points.forEach(function(pt, i){
+      var x = getX(i, points.length);
+      var y = getY(pt.temp);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = nodeColors[sid];
+    ctx.lineWidth = sid === activeTargetSensor ? 2.8 : 1.5;
+    ctx.stroke();
+
+    // Dots
+    points.forEach(function(pt, i){
+      var x = getX(i, points.length);
+      var y = getY(pt.temp);
+      ctx.beginPath();
+      ctx.arc(x, y, sid === activeTargetSensor ? 3.5 : 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = nodeColors[sid];
+      ctx.fill();
+    });
+  });
+}
+
+function drawSparkline(forecast) {
+  var canvas = document.getElementById('forecastSparkCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+
+  ctx.fillStyle = '#06101a';
+  ctx.fillRect(0, 0, W, H);
+
+  var minT = Math.min.apply(null, forecast) - 0.2;
+  var maxT = Math.max.apply(null, forecast) + 0.2;
+
+  ctx.beginPath();
+  forecast.forEach(function(t, i){
+    var x = (i / (forecast.length - 1)) * (W - 20) + 10;
+    var y = H - 15 - ((t - minT) / (maxT - minT)) * (H - 30);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#55dfff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  forecast.forEach(function(t, i){
+    var x = (i / (forecast.length - 1)) * (W - 20) + 10;
+    var y = H - 15 - ((t - minT) / (maxT - minT)) * (H - 30);
+    ctx.beginPath();
+    ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = t <= 5.0 ? '#62e6c3' : '#e74c5e';
+    ctx.fill();
+  });
+}
+
+// Initial fetch
+fetchAllSensors();
+</script>
+{% endblock %}

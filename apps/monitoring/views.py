@@ -78,7 +78,7 @@ def page(request, name):
     data['recommended_solution'] = dict(data['recommended_solution'])
     data['recommended_solution']['cooling_intensity'] *= 100
     data['recommended_solution']['compressor_duty_cycle'] *= 100
-    metrics = json.loads(Path('models/metrics.json').read_text()) if Path('models/metrics.json').exists() else {'mae': 1.2501, 'rmse': 1.4672}
+    metrics = json.loads(Path('models/metrics.json').read_text()) if Path('models/metrics.json').exists() else {'mae': 1.0131, 'rmse': 1.2224}
     slug = name.lower().replace(' ', '-')
     template_map = {
         'live-monitoring': 'live_monitoring.html',
@@ -90,8 +90,26 @@ def page(request, name):
         'upload': 'upload.html',
         'reports': 'reports.html',
         'methodology': 'methodology.html',
+        'datasets': 'datasets.html',
     }
     template_name = template_map.get(slug, 'server_page.html')
+
+    registry = {}
+    reg_path = Path('experiments/registry.json')
+    if reg_path.exists():
+        try:
+            registry = json.loads(reg_path.read_text(encoding='utf-8'))
+        except Exception:
+            pass
+
+    comparison_summary = {}
+    comp_path = Path('reports/nsga2_comparison/comparison_summary.json')
+    if comp_path.exists():
+        try:
+            comparison_summary = json.loads(comp_path.read_text(encoding='utf-8'))
+        except Exception:
+            pass
+
     context = {
         'page_name': name,
         'data': data,
@@ -99,6 +117,8 @@ def page(request, name):
         'sensor_count': Sensor.objects.count(),
         'forecast_json': json.dumps(data['forecast']),
         'pareto_json': json.dumps(data['pareto_solutions']),
+        'registry': registry,
+        'comparison_summary': comparison_summary,
     }
     # Predictions page: inject real historical temperature readings
     if slug == 'predictions':
@@ -109,6 +129,43 @@ def page(request, name):
         historical.reverse()
         context['historical_json'] = json.dumps(historical)
     return render(request, template_name, context)
+
+def datasets_page(request):
+    sensor = _get_sensor(request)
+    data = {}
+    if sensor:
+        try:
+            data = decision_for_sensor(sensor)
+            data['recommended_solution'] = dict(data['recommended_solution'])
+            data['recommended_solution']['cooling_intensity'] *= 100
+            data['recommended_solution']['compressor_duty_cycle'] *= 100
+        except Exception:
+            pass
+    metrics = json.loads(Path('models/metrics.json').read_text()) if Path('models/metrics.json').exists() else {'mae': 1.0131, 'rmse': 1.2224}
+    registry = {}
+    reg_path = Path('experiments/registry.json')
+    if reg_path.exists():
+        try:
+            registry = json.loads(reg_path.read_text(encoding='utf-8'))
+        except Exception:
+            pass
+    return render(request, 'datasets.html', {
+        'page_name': 'Datasets & Benchmarks',
+        'data': data,
+        'metrics': metrics,
+        'registry': registry,
+        'sensor_count': Sensor.objects.count(),
+    })
+
+def datasets_api(request):
+    reg_path = Path('experiments/registry.json')
+    data = json.loads(reg_path.read_text(encoding='utf-8')) if reg_path.exists() else {'experiments': []}
+    return JsonResponse({'status': 'OK', 'experiments': data.get('experiments', [])})
+
+def experiments_api(request):
+    reg_path = Path('experiments/registry.json')
+    data = json.loads(reg_path.read_text(encoding='utf-8')) if reg_path.exists() else {'experiments': []}
+    return JsonResponse(data)
 
 # ---------------------------------------------------------------------------
 # REST API views

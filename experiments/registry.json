@@ -1,0 +1,195 @@
+{
+  "version": "2.0.0",
+  "last_updated": "2026-10-06",
+  "active_experiment_id": "exp_baseline_simulation",
+  "experiments": [
+    {
+      "experiment_id": "exp_baseline_simulation",
+      "dataset": "Simulated Cold Chain Logistics (simulated_cold_chain.csv)",
+      "dataset_path": "data/raw/simulated_cold_chain.csv",
+      "data_classification": "SIMULATION",
+      "purpose": "Primary Cold-Chain Demonstration & Reference Food/Pharma Telemetry Model",
+      "features": [
+        "temperature",
+        "humidity",
+        "ambient_temperature",
+        "power_kw",
+        "compressor_state",
+        "door_open",
+        "temperature_delta",
+        "rolling_mean",
+        "rolling_std",
+        "temperature_slope",
+        "ambient_difference",
+        "power_delta"
+      ],
+      "target": "temperature",
+      "sequence_length": 60,
+      "forecast_horizon": 15,
+      "model": "Multi-scale Adaptive Dilated Temporal Convolutional Network (MAD-TCN)",
+      "train_rows": 5890,
+      "validation_rows": 1262,
+      "test_rows": 1262,
+      "MAE": 1.0131,
+      "RMSE": 1.2224,
+      "MAPE": 14.8,
+      "R2": 0.5893,
+      "risk_metrics": {
+        "profile": "Food (0.0 to 5.0 °C)",
+        "precision": 0.7674,
+        "recall": 1.0,
+        "f1_score": 0.8684,
+        "false_alarms": 137,
+        "missed_events": 0
+      },
+      "energy_metrics": {
+        "energy_type": "ESTIMATED / SIMULATED",
+        "formula": "Thermodynamic compressor function P(cooling, ambient)",
+        "mean_cycle_energy_kwh": 0.4471
+      },
+      "optimization_metrics": {
+        "algorithm": "Prediction-Guided NSGA-II (pymoo)",
+        "energy_savings_vs_reactive": "19.6% reduction in cooling energy",
+        "mean_pareto_solutions": 43.3,
+        "mean_solve_latency_ms": 303.48
+      },
+      "checkpoint": "models/mad_tcn_best.pt",
+      "date": "2026-10-06",
+      "status": "ACTIVE_DEFAULT"
+    },
+    {
+      "experiment_id": "exp_iot_temperature_external",
+      "dataset": "Temperature Readings: IoT Devices (Kaggle Manikanta Kumar)",
+      "dataset_path": "Datasets/02_iot_temperature/iot_temperature_readings.csv",
+      "data_classification": "PUBLIC_DATASET",
+      "purpose": "External Real-World Physical ESP8266 IoT Sensor Telemetry Benchmark",
+      "features": [
+        "temperature",
+        "humidity",
+        "ambient_temperature",
+        "power_kw",
+        "compressor_state",
+        "door_open",
+        "temperature_delta",
+        "rolling_mean",
+        "rolling_std",
+        "temperature_slope",
+        "ambient_difference",
+        "power_delta"
+      ],
+      "target": "temp",
+      "sequence_length": 60,
+      "forecast_horizon": 15,
+      "model": "Multi-scale Adaptive Dilated Temporal Convolutional Network (MAD-TCN)",
+      "train_rows": 6060,
+      "validation_rows": 1299,
+      "test_rows": 1299,
+      "MAE": 0.7576,
+      "RMSE": 1.204,
+      "MAPE": 2.54,
+      "R2": 0.485,
+      "risk_metrics": {
+        "profile": "Indoor Ambient Safety Band (24.0 to 30.5 °C)",
+        "precision": 0.9634,
+        "recall": 0.8061,
+        "f1_score": 0.8778,
+        "false_alarms": 3,
+        "missed_events": 19
+      },
+      "energy_metrics": {
+        "energy_type": "NOT MEASURED (Sensor node only)",
+        "details": "Real ESP8266 sensor node in room; no physical compressor actuator attached."
+      },
+      "optimization_metrics": {
+        "algorithm": "Prediction-Guided NSGA-II (Simulated Response)",
+        "mean_solve_latency_ms": 288.5
+      },
+      "checkpoint": "models/experiments/mad_tcn_iot_readings/checkpoint.pt",
+      "date": "2026-10-06",
+      "status": "VALIDATED_EXTERNAL"
+    },
+    {
+      "experiment_id": "exp_energy_thermal_demand",
+      "dataset": "Energy Consumption Prediction (Kaggle)",
+      "dataset_path": "Datasets/03_energy_consumption/energy_consumption_prediction.csv",
+      "data_classification": "PUBLIC_DATASET",
+      "purpose": "Multi-Factor Thermal-Environmental Load Energy Demand Modeling",
+      "features": [
+        "Temperature",
+        "Humidity",
+        "SquareFootage",
+        "Occupancy",
+        "HVACUsage",
+        "LightingUsage",
+        "RenewableEnergy"
+      ],
+      "target": "EnergyConsumption (kWh)",
+      "sequence_length": 1,
+      "forecast_horizon": 1,
+      "model": "Normalized Environmental Thermal Ridge Regression",
+      "train_rows": 700,
+      "validation_rows": 150,
+      "test_rows": 150,
+      "MAE": 4.0994,
+      "RMSE": 4.9602,
+      "MAPE": 5.32,
+      "R2": 0.5866,
+      "risk_metrics": {
+        "profile": "Peak Load Excursion (>90 kWh)",
+        "precision": 0.88,
+        "recall": 0.85,
+        "f1_score": 0.865
+      },
+      "energy_metrics": {
+        "energy_type": "MEASURED (Building HVAC/Lighting Electricity)",
+        "hvac_coefficient_impact": "+3.82 kWh"
+      },
+      "optimization_metrics": {
+        "algorithm": "Thermal-Load Energy Prediction",
+        "inference_latency_ms": 0.15
+      },
+      "checkpoint": "reports/energy_validation/energy_metrics.json",
+      "date": "2026-10-06",
+      "status": "VALIDATED_EXTERNAL"
+    },
+    {
+      "experiment_id": "exp_scalability_big_data",
+      "dataset": "EVIoT 15-min Telemetry + Documented Synthetic Expansion (10K - 1M)",
+      "dataset_path": "Datasets/04_predictive_maintenance/eviot_predictive_maintenance.csv",
+      "data_classification": "SYNTHETIC_BENCHMARK",
+      "purpose": "Streaming Ingestion, Vectorized Preprocessing, & Edge Inference Scalability Stress Test",
+      "features": [
+        "30 multi-sensor electrical, thermal, mechanical, and degradation channels"
+      ],
+      "target": "Throughput and Latency Across Scales",
+      "sequence_length": 60,
+      "forecast_horizon": 15,
+      "model": "MAD-TCN Streaming Inference Engine",
+      "train_rows": 175393,
+      "validation_rows": 0,
+      "test_rows": 1000000,
+      "MAE": 0.0,
+      "RMSE": 0.0,
+      "MAPE": 0.0,
+      "R2": 0.0,
+      "risk_metrics": {
+        "profile": "High-Frequency Real-Time Telemetry",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "energy_metrics": {
+        "energy_type": "MEASURED POWERTRAIN (EV Battery/Motor Power)",
+        "peak_power_profiled_kw": 17.0
+      },
+      "optimization_metrics": {
+        "algorithm": "High-Throughput NSGA-II Batch Engine",
+        "latency_at_1m_rows_sec": 0.867,
+        "peak_ram_mb": 336.9
+      },
+      "checkpoint": "reports/scalability/scalability_results.csv",
+      "date": "2026-10-06",
+      "status": "VALIDATED_EXTERNAL"
+    }
+  ]
+}

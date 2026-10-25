@@ -1,0 +1,116 @@
+{
+  "total_pages_verified": 12,
+  "passed_count": 12,
+  "failed_count": 0,
+  "console_errors": [],
+  "pages": [
+    {
+      "route": "/",
+      "name": "home",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1890.2,
+      "screenshot": "docs\\screenshots\\home.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/dashboard/",
+      "name": "dashboard",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1755.4,
+      "screenshot": "docs\\screenshots\\dashboard.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/datasets/",
+      "name": "datasets",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1352.5,
+      "screenshot": "docs\\screenshots\\datasets.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/live-monitoring/",
+      "name": "live_monitoring",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1662.4,
+      "screenshot": "docs\\screenshots\\live_monitoring.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/predictions/",
+      "name": "predictions",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1610.9,
+      "screenshot": "docs\\screenshots\\predictions.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/optimization/",
+      "name": "optimization",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1986.0,
+      "screenshot": "docs\\screenshots\\optimization.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/alerts/",
+      "name": "alerts",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1648.5,
+      "screenshot": "docs\\screenshots\\alerts.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/model/",
+      "name": "model",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1675.4,
+      "screenshot": "docs\\screenshots\\model.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/sensors/",
+      "name": "sensors",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1610.8,
+      "screenshot": "docs\\screenshots\\sensors.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/reports/",
+      "name": "reports",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1496.3,
+      "screenshot": "docs\\screenshots\\reports.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/upload/",
+      "name": "upload",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1595.5,
+      "screenshot": "docs\\screenshots\\upload.png",
+      "status": "PASS"
+    },
+    {
+      "route": "/methodology/",
+      "name": "methodology",
+      "http_status": 200,
+      "content_verified": true,
+      "load_time_ms": 1679.8,
+      "screenshot": "docs\\screenshots\\methodology.png",
+      "status": "PASS"
+    }
+  ]
+}

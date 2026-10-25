@@ -20,7 +20,10 @@ urlpatterns = [
     *[path(f'api/{k}/', views.derived, {'kind': k}) for k in ['predictions', 'risk', 'optimization', 'alerts']],
     *[path(f'api/simulation/{a}/', views.simulation, {'action': a}) for a in ['start', 'pause', 'reset']],
     path('api/alerts/<str:alert_id>/resolve/', views.resolve_alert),
+    path('datasets/', views.datasets_page, name='datasets'),
+    path('api/datasets/', views.datasets_api, name='datasets_api'),
+    path('api/experiments/', views.experiments_api, name='experiments_api'),
     *[path(f'{name}/', views.page, {'name': name.replace('-', ' ').title()}) for name in [
-        'live-monitoring', 'predictions', 'optimization', 'alerts', 'model', 'sensors', 'reports', 'upload', 'methodology'
+        'live-monitoring', 'predictions', 'optimization', 'alerts', 'model', 'sensors', 'reports', 'upload', 'methodology', 'datasets'
     ]]
 ]

@@ -1,0 +1,31 @@
+{
+    "dataset_name": "Energy Consumption Prediction",
+    "source": "Kaggle (energy-consumption-prediction)",
+    "original_path": "D:/COLDCHAIN-AI/Datasets/archive (1)/Energy_consumption.csv",
+    "clean_path": "D:/COLDCHAIN-AI/Datasets/03_energy_consumption/energy_consumption_prediction.csv",
+    "rows": 1000,
+    "columns": 11,
+    "time_column": "Timestamp",
+    "temperature_columns": [
+        "Temperature"
+    ],
+    "humidity_columns": [
+        "Humidity"
+    ],
+    "energy_columns": [
+        "EnergyConsumption",
+        "RenewableEnergy"
+    ],
+    "power_columns": [],
+    "voltage_columns": [],
+    "current_columns": [],
+    "sensor_columns": [],
+    "location_columns": [],
+    "anomaly_columns": [],
+    "failure_columns": [],
+    "sampling_interval": "1 hour",
+    "data_type": "PUBLIC_DATASET",
+    "research_role": "Building HVAC thermal load and environmental energy relationship modeling benchmark.",
+    "cold_chain_relevance": "Analogue: Models facility HVAC energy driven by ambient temperature and occupancy. Useful to benchmark multi-factor thermal energy modeling, but does NOT represent cold room vapor-compression refrigeration.",
+    "notes": "1,000 hourly observations with HVACUsage, LightingUsage, SquareFootage, Occupancy, RenewableEnergy, DayOfWeek, and Holiday."
+}

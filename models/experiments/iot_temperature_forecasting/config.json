@@ -1,0 +1,26 @@
+{
+  "experiment_id": "iot_temperature_forecasting",
+  "dataset": "IoT Temperature Forecasting (01_temperature_forecasting notebook study)",
+  "data_type": "PUBLIC_DATASET",
+  "model": "MAD-TCN",
+  "features": [
+    "temperature",
+    "humidity",
+    "ambient_temperature",
+    "power_kw",
+    "compressor_state",
+    "door_open",
+    "temperature_delta",
+    "rolling_mean",
+    "rolling_std",
+    "temperature_slope",
+    "ambient_difference",
+    "power_delta"
+  ],
+  "sequence_length": 60,
+  "forecast_horizon": 15,
+  "reference_notebook": "Datasets/01_temperature_forecasting/iot_temperature_forecasting.ipynb",
+  "train_split": 0.7,
+  "val_split": 0.15,
+  "test_split": 0.15
+}

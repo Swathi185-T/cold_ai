@@ -1,0 +1,26 @@
+{
+  "total_scenarios_evaluated": 50,
+  "method_a_current_state": {
+    "mean_energy_kwh": 0.5561,
+    "total_temperature_violations": 153.8806,
+    "mean_violation_per_scenario": 3.0776,
+    "mean_compressor_duty": 0.6847,
+    "mean_opt_time_ms": 294.13,
+    "mean_pareto_solutions": 35.78
+  },
+  "method_b_prediction_guided": {
+    "mean_energy_kwh": 0.4471,
+    "total_temperature_violations": 434.9139,
+    "mean_violation_per_scenario": 8.6983,
+    "mean_compressor_duty": 0.5477,
+    "mean_opt_time_ms": 303.48,
+    "mean_pareto_solutions": 43.3
+  },
+  "relative_comparison": {
+    "violation_change_pct": 182.63,
+    "violation_direction": "Method B has MORE violations than Method A",
+    "energy_delta_kwh": -0.1091,
+    "energy_direction": "Method B uses LESS energy than Method A (19.6% savings)",
+    "scientific_conclusion": "Method B (Prediction-Guided NSGA-II) saves 19.6% energy by reducing compressor duty cycle, but this comes at the cost of 182.6% more thermal violations. The results demonstrate a genuine Pareto trade-off between energy efficiency and thermal safety, not a unilateral improvement. Method A is preferable when strict thermal compliance is required; Method B is preferable when energy cost reduction is prioritized and minor thermal excursions are tolerable."
+  }
+}

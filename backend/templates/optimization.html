@@ -1,0 +1,246 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Prediction-Guided NSGA-II Optimization | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Prediction-Guided NSGA-II Optimization</h1>
+  <div class="card-subtitle">Multi-objective evolutionary algorithm balancing future temperature safety risk and compressor energy consumption</div>
+</div>
+
+<!-- OPTIMIZATION METRICS -->
+<div class="grid-4">
+  <div class="card">
+    <div class="stat-label">Algorithm</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">NSGA-II</div>
+    <div class="stat-hint">pymoo Non-Dominated Sorting</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Population / Gen</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">48 Pop · 30 Gen</div>
+    <div class="stat-hint">1,440 Candidate Evaluations</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Decision Variables</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">3 Parameters</div>
+    <div class="stat-hint">Cooling Intensity, Duty, Offset</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Pareto Solutions</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--success); margin:6px 0;">{{ data.pareto_solutions|length }} Non-Dominated</div>
+    <div class="stat-hint">Actual mathematical Pareto front</div>
+  </div>
+</div>
+
+<!-- MAIN PARETO PLOT + RECOMMENDATION CARD -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Pareto Front: Energy vs Safety Risk</div>
+        <div class="card-subtitle">Trade-off curve between estimated energy (kWh) and residual future risk</div>
+      </div>
+      <span class="badge">{{ data.pareto_solutions|length }} Solution{{ data.pareto_solutions|length|pluralize }}</span>
+    </div>
+
+    <div style="position:relative; width:100%; height:320px;">
+      <canvas id="optParetoCanvas"></canvas>
+    </div>
+
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:12px; text-align:center;">
+      ● Green ring designates the weighted optimal recommendation selected from the non-dominated set.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Selected Pareto Solution</div>
+        <div class="card-subtitle">Optimal operational setpoint for actuator controllers</div>
+      </div>
+      <span class="badge badge-success">Selected Action</span>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+        <div class="stat-label">Cooling Intensity</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent); margin:4px 0;">{{ data.recommended_solution.cooling_intensity|floatformat:0 }}%</div>
+        <div class="stat-hint">Actuator valve position</div>
+      </div>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+        <div class="stat-label">Compressor Duty Cycle</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent); margin:4px 0;">{{ data.recommended_solution.compressor_duty_cycle|floatformat:0 }}%</div>
+        <div class="stat-hint">PWM cycling ratio</div>
+      </div>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+        <div class="stat-label">Target Temp Offset</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent); margin:4px 0;">{{ data.recommended_solution.target_temperature_offset|floatformat:3 }} °C</div>
+        <div class="stat-hint">Setpoint bias variable</div>
+      </div>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+        <div class="stat-label">Estimated Energy</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--accent); margin:4px 0;">{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</div>
+        <div class="stat-hint">Simulated consumption</div>
+      </div>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
+        <div class="stat-label">Safety Risk Score</div>
+        <div style="font-size:1.4rem; font-weight:800; color:var(--success); margin:4px 0;">{{ data.recommended_solution.safety_risk|floatformat:2 }}</div>
+        <div class="stat-hint">Post-action residual risk</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(85,223,255,0.02); border:1px solid var(--border-accent); border-radius:8px; padding:14px;">
+      <div style="font-size:0.75rem; font-weight:800; color:var(--success); text-transform:uppercase; margin-bottom:4px;">
+        Expected Result
+      </div>
+      <div style="font-size:0.85rem; color:var(--text-primary); margin-bottom:6px;">
+        Chamber temperature stabilizes at <strong>{{ data.recommended_solution.expected_temperature|floatformat:2 }} °C</strong>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
+        {{ data.recommended_solution.explanation }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TECHNICAL PIPELINE COMPARISON -->
+<div class="card" style="margin-top:16px;">
+  <div class="card-header">
+    <div class="card-title">Why Prediction-Guided NSGA-II Outperforms Reactive Control</div>
+    <span class="badge">Research Rationale</span>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Pipeline Dimension</th><th>Traditional Reactive Control</th><th>COLDCHAIN AI (Prediction-Guided NSGA-II)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Input Information</strong></td>
+        <td>Current sensor temperature $T_{t}$ alone</td>
+        <td><strong>Full 15-step forecast trajectory $\hat{T}_{t+1..t+15}$ from MAD-TCN</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Risk Detection</strong></td>
+        <td>Breach triggers alarm only after exceeding limit</td>
+        <td><strong>Calculates future violation score $S_{\text{risk}}$ before breach occurs</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Optimization Objective</strong></td>
+        <td>Bang-bang on/off or single setpoint PID</td>
+        <td><strong>Bi-objective Pareto minimization: $f_1 = \text{Residual Risk}$, $f_2 = \text{Energy}$</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Energy Efficiency</strong></td>
+        <td>Over-cools continuously to ensure safety margin</td>
+        <td><strong>Reduces cooling intensity and duty cycle whenever predicted risk is low</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  var canvas = document.getElementById('optParetoCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+  var pad = { top: 25, right: 30, bottom: 45, left: 60 };
+  var cW = W - pad.left - pad.right;
+  var cH = H - pad.top - pad.bottom;
+
+  var solutions = {{ data.pareto_solutions|safe|default:"[]" }};
+
+  ctx.fillStyle = '#0a1929';
+  ctx.fillRect(0, 0, W, H);
+
+  // Axes Box
+  ctx.strokeStyle = 'rgba(85,223,255,0.08)';
+  ctx.lineWidth = 1;
+  for (var i = 0; i <= 4; i++) {
+    var gy = pad.top + (i / 4) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+    var gx = pad.left + (i / 4) * cW;
+    ctx.beginPath(); ctx.moveTo(gx, pad.top); ctx.lineTo(gx, pad.top + cH); ctx.stroke();
+  }
+
+  // Axis Labels
+  ctx.fillStyle = '#7a9ab5';
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('Estimated Energy Consumption (kWh)', pad.left + cW/2, H - 10);
+
+  ctx.save();
+  ctx.translate(16, pad.top + cH/2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Safety Risk Score (Residual)', 0, 0);
+  ctx.restore();
+
+  // Compute bounds from solutions or defaults
+  var minE = 0.0, maxE = 0.15;
+  var minR = 0.0, maxR = 50.0;
+  if (solutions.length > 0) {
+    var energies = solutions.map(function(s){ return s.estimated_energy_kwh; });
+    var risks = solutions.map(function(s){ return s.safety_risk; });
+    minE = Math.max(0, Math.min.apply(null, energies) - 0.02);
+    maxE = Math.max(0.12, Math.max.apply(null, energies) + 0.03);
+    minR = Math.max(0, Math.min.apply(null, risks) - 2.0);
+    maxR = Math.max(10.0, Math.max.apply(null, risks) + 5.0);
+  }
+
+  function getPX(e) { return pad.left + ((e - minE) / (maxE - minE)) * cW; }
+  function getPY(r) { return pad.top + cH - ((r - minR) / (maxR - minR)) * cH; }
+
+  // Draw Ticks & Values
+  ctx.fillStyle = '#4a6a85';
+  ctx.font = '10px system-ui';
+  for (var i = 0; i <= 4; i++) {
+    var rVal = maxR - (i / 4) * (maxR - minR);
+    var gy = pad.top + (i / 4) * cH;
+    ctx.textAlign = 'right';
+    ctx.fillText(rVal.toFixed(1), pad.left - 8, gy + 4);
+
+    var eVal = minE + (i / 4) * (maxE - minE);
+    var gx = pad.left + (i / 4) * cW;
+    ctx.textAlign = 'center';
+    ctx.fillText(eVal.toFixed(3), gx, pad.top + cH + 16);
+  }
+
+  // Plot Pareto solutions
+  solutions.forEach(function(s, idx){
+    var px = getPX(s.estimated_energy_kwh);
+    var py = getPY(s.safety_risk);
+
+    // Glow ring
+    ctx.beginPath();
+    ctx.arc(px, py, 14, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(98,230,195,0.12)';
+    ctx.fill();
+
+    // Border ring
+    ctx.beginPath();
+    ctx.arc(px, py, 9, 0, Math.PI * 2);
+    ctx.strokeStyle = '#62e6c3';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Center point
+    ctx.beginPath();
+    ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#62e6c3';
+    ctx.fill();
+
+    ctx.fillStyle = '#e0ecf5';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText('Non-Dominated Solution #' + (idx + 1) + ' (E: ' + s.estimated_energy_kwh.toFixed(3) + ' kWh, Risk: ' + s.safety_risk.toFixed(2) + ')', Math.min(px + 16, pad.left + cW - 170), Math.max(py - 10, pad.top + 14));
+  });
+})();
+</script>
+{% endblock %}

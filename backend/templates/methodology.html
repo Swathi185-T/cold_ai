@@ -1,0 +1,126 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}Research Methodology & Architecture | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Research Methodology &amp; Mathematical Formulation</h1>
+  <div class="card-subtitle">Formal framework of prediction-guided, energy-aware cold-chain optimization</div>
+</div>
+
+<!-- CENTRAL RESEARCH CLAIM -->
+<div class="card" style="text-align:center; padding:28px; margin-bottom:24px; background:radial-gradient(ellipse at center, rgba(85,223,255,0.06) 0%, rgba(13,33,51,0.8) 100%); border-color:var(--border-accent);">
+  <div class="stat-label">Core Research Contribution</div>
+  <div style="font-size:1.6rem; font-weight:900; color:var(--text-primary); margin:8px 0;">
+    PREDICTION-GUIDED <span style="color:var(--accent);">ENERGY-AWARE</span> COLD-CHAIN OPTIMIZATION
+  </div>
+  <p style="font-size:0.85rem; color:var(--text-secondary); max-width:760px; margin:0 auto; line-height:1.6;">
+    Traditional refrigeration management operates reactively: cooling controllers only respond after temperatures breach upper bounds. COLDCHAIN AI uses a deep temporal convolutional network (MAD-TCN) to forecast future temperatures 15 steps ahead, calculates cumulative future risk, and feeds that risk into a multi-objective genetic algorithm (NSGA-II) to balance product safety and energy consumption.
+  </p>
+</div>
+
+<!-- VISUAL SYSTEM ARCHITECTURE FLOW -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <div class="card-title">End-to-End Pipeline Architecture</div>
+    <span class="badge">11-Stage Pipeline</span>
+  </div>
+
+  <div style="display:flex; justify-content:center; padding:20px 0;">
+    <svg viewBox="0 0 520 680" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="pipeGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#55dfff" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#55dfff" stop-opacity="0.1"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 1. Sensors -->
+      <rect x="60" y="10" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.2)"/>
+      <text x="260" y="36" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="700">1. SENSORS (IoT Multi-Node Telemetry)</text>
+      <line x1="260" y1="52" x2="260" y2="68" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 2. Ingestion -->
+      <rect x="60" y="68" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.2)"/>
+      <text x="260" y="94" text-anchor="middle" fill="#e0ecf5" font-size="11" font-weight="700">2. INGESTION (Schema Validation &amp; Storage)</text>
+      <line x1="260" y1="110" x2="260" y2="126" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 3. Preprocessing -->
+      <rect x="60" y="126" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.2)"/>
+      <text x="260" y="152" text-anchor="middle" fill="#e0ecf5" font-size="11" font-weight="700">3. PREPROCESSING (Interpolation &amp; Cleaning)</text>
+      <line x1="260" y1="168" x2="260" y2="184" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 4. Temporal Windows -->
+      <rect x="60" y="184" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.2)"/>
+      <text x="260" y="210" text-anchor="middle" fill="#e0ecf5" font-size="11" font-weight="700">4. TEMPORAL WINDOWS (60 timesteps × 12 features)</text>
+      <line x1="260" y1="226" x2="260" y2="242" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 5. MAD-TCN -->
+      <rect x="60" y="242" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.35)" stroke-width="1.5"/>
+      <text x="260" y="268" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="800">5. MAD-TCN (Multi-scale Adaptive Dilated TCN)</text>
+      <line x1="260" y1="284" x2="260" y2="300" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 6. Future Temperature -->
+      <rect x="60" y="300" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(98,230,195,0.25)"/>
+      <text x="260" y="326" text-anchor="middle" fill="#62e6c3" font-size="11" font-weight="700">6. FUTURE TEMPERATURE (15-step trajectory $\hat{T}$)</text>
+      <line x1="260" y1="342" x2="260" y2="358" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 7. Future Risk -->
+      <rect x="60" y="358" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(245,166,35,0.25)"/>
+      <text x="260" y="384" text-anchor="middle" fill="#f5a623" font-size="11" font-weight="700">7. FUTURE RISK ($S_{\text{risk}}$ violation scoring)</text>
+      <line x1="260" y1="400" x2="260" y2="416" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 8. NSGA-II -->
+      <rect x="60" y="416" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.35)" stroke-width="1.5"/>
+      <text x="260" y="442" text-anchor="middle" fill="#55dfff" font-size="11" font-weight="800">8. PREDICTION-GUIDED NSGA-II (Evolutionary MOO)</text>
+      <line x1="260" y1="458" x2="260" y2="474" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 9. Pareto -->
+      <rect x="60" y="474" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(85,223,255,0.2)"/>
+      <text x="260" y="500" text-anchor="middle" fill="#e0ecf5" font-size="11" font-weight="700">9. PARETO SET (Non-dominated energy/safety front)</text>
+      <line x1="260" y1="516" x2="260" y2="532" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 10. Recommendation -->
+      <rect x="60" y="532" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(98,230,195,0.3)"/>
+      <text x="260" y="558" text-anchor="middle" fill="#62e6c3" font-size="11" font-weight="700">10. RECOMMENDATION (Optimal cooling &amp; duty cycle)</text>
+      <line x1="260" y1="574" x2="260" y2="590" stroke="url(#pipeGrad)" stroke-width="2"/>
+
+      <!-- 11. Dashboard -->
+      <rect x="60" y="590" width="400" height="42" rx="8" fill="#0d2133" stroke="rgba(98,230,195,0.4)" stroke-width="1.5"/>
+      <text x="260" y="616" text-anchor="middle" fill="#62e6c3" font-size="11" font-weight="800">11. DJANGO CONTROL CENTER (Visual Decision Support)</text>
+    </svg>
+  </div>
+</div>
+
+<!-- MATHEMATICAL EQUATIONS -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Future Risk Formulation</div>
+      <span class="badge">Safety Objective</span>
+    </div>
+    <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+      <p>Given profile bounds $[T_{\min}, T_{\max}]$ and 15-step forecast $\mathbf{p} = [p_1, \dots, p_H]$:</p>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:12px; margin:10px 0; font-family:monospace; color:var(--accent);">
+        V(p_i) = \max(p_i - T_{\max}, 0) + \max(T_{\min} - p_i, 0)<br>
+        S_{\text{risk}} = \text{clip}\left(100 \cdot \left(\frac{\bar{V}}{T_{\max} - T_{\min} + \epsilon} + 0.08 \cdot \max(0, \overline{\Delta p})\right), 0, 100\right)
+      </div>
+      <p>This penalty scales with both the average magnitude of boundary violation $\bar{V}$ and upward thermal velocity $\overline{\Delta p}$.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Estimated Energy Model</div>
+      <span class="badge">Energy Objective</span>
+    </div>
+    <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+      <p>Energy $E$ is simulated as a function of thermal lift $(T_{\text{ambient}} - T_{\text{chamber}})$, cooling intensity $I \in [0.1, 1.0]$, and compressor duty cycle $D \in [0.2, 1.0]$:</p>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:12px; margin:10px 0; font-family:monospace; color:var(--accent);">
+        E = \left(0.25 + 0.035 \cdot \max(T_{\text{amb}} - T_{\text{curr}}, 0)\right) \cdot (0.35 + 0.65 \cdot I) \cdot D
+      </div>
+      <p>NSGA-II minimizes residual risk and estimated energy simultaneously across a population of 48 individuals over 30 generations.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

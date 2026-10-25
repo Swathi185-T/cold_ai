@@ -1,0 +1,283 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}MAD-TCN Predictive Forecasting | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 class="page-title">MAD-TCN Temporal Forecasting</h1>
+    <div class="card-subtitle">Multi-scale Adaptive Dilated Temporal Convolutional Network — 15-step horizon prediction</div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <span class="badge" style="font-size:0.75rem;">Node: <strong>{{ data.sensor }}</strong></span>
+    <span class="badge badge-success">PyTorch CPU Inference</span>
+  </div>
+</div>
+
+<!-- MODEL METRICS ROW -->
+<div class="grid-4">
+  <div class="card">
+    <div class="stat-label">Model Architecture</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">MAD-TCN</div>
+    <div class="stat-hint">Dilated Causal Temporal Convolutions</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Tensor Input / Output</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--accent); margin:6px 0;">60 × 12 → 15</div>
+    <div class="stat-hint">60 timesteps × 12 features → 15 future steps</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Mean Absolute Error</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--success); margin:6px 0;">{{ metrics.mae|floatformat:4|default:"1.2501" }}</div>
+    <div class="stat-hint">Held-out validation MAE</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Root Mean Squared Error</div>
+    <div style="font-size:1.3rem; font-weight:800; color:var(--success); margin:6px 0;">{{ metrics.rmse|floatformat:4|default:"1.4672" }}</div>
+    <div class="stat-hint">Held-out validation RMSE</div>
+  </div>
+</div>
+
+<!-- LARGE FORECAST CHART -->
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">15-Step Multi-Horizon Temperature Trajectory (Node: {{ data.sensor }})</div>
+      <div class="card-subtitle">Observed sensor history queried from SQLite concatenated with 15-step MAD-TCN inference</div>
+    </div>
+    <span class="badge badge-success">Active Node: {{ data.sensor }}</span>
+  </div>
+
+  <div style="position:relative; width:100%; height:340px;">
+    <canvas id="largeForecastCanvas"></canvas>
+    <div id="predTooltip" style="position:absolute; display:none; background:rgba(6,16,26,0.92); border:1px solid var(--border-accent); border-radius:6px; padding:6px 10px; font-size:0.75rem; pointer-events:none; z-index:10;"></div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; margin-top:14px; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap; gap:12px;">
+    <div>
+      <span style="color:#62e6c3;">● Verified Observed Readings (SQLite)</span> &nbsp;
+      <span style="color:#55dfff;">▲ MAD-TCN Predicted Trajectory</span> &nbsp;
+      <span style="color:var(--text-muted);">| Horizon Boundary</span>
+    </div>
+    <div>
+      <span style="display:inline-block;width:10px;height:10px;background:rgba(98,230,195,0.2);margin-right:4px;"></span>Safe Zone (0.0–5.0 °C) &nbsp;
+      <span style="display:inline-block;width:10px;height:10px;background:rgba(245,166,35,0.2);margin-right:4px;"></span>Warning (5.0–7.0 °C) &nbsp;
+      <span style="display:inline-block;width:10px;height:10px;background:rgba(231,76,94,0.2);margin-right:4px;"></span>Critical (&gt;7.0 °C)
+    </div>
+  </div>
+</div>
+
+<!-- FORECAST STEP BREAKDOWN TABLE + RISK SUMMARY -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Step-by-Step Forecast Values</div>
+      <span class="badge">15 Steps</span>
+    </div>
+    <div style="max-height:300px; overflow-y:auto;">
+      <table class="data-table" id="forecastStepsTable">
+        <thead>
+          <tr><th>Horizon</th><th>Predicted Temp</th><th>Safety Margin (Limit: 5.0 °C)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for t in data.forecast %}
+          <tr>
+            <td><strong>t+{{ forloop.counter }}</strong></td>
+            <td><strong>{{ t|floatformat:2 }} °C</strong></td>
+            <td class="step-margin" data-temp="{{ t }}">
+              Calculating...
+            </td>
+            <td>
+              {% if t <= 5.0 %}
+                <span class="badge badge-success" style="font-size:0.6rem;padding:2px 6px;">SAFE</span>
+              {% elif t <= 7.0 %}
+                <span class="badge badge-warning" style="font-size:0.6rem;padding:2px 6px;">WARNING</span>
+              {% else %}
+                <span class="badge badge-danger" style="font-size:0.6rem;padding:2px 6px;">CRITICAL</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Forecast-Derived Future Risk</div>
+      <span class="badge {% if data.risk.risk_level == 'LOW' %}badge-success{% else %}badge-warning{% endif %}">{{ data.risk.risk_level }}</span>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div class="stat-label">Calculated Risk Score</div>
+      <div style="font-size:2.2rem; font-weight:900; color:{% if data.risk.risk_level == 'LOW' %}var(--success){% else %}var(--warning){% endif %}; margin:4px 0;">
+        {{ data.risk.risk_score|floatformat:2 }}
+      </div>
+      <div class="meter-bar">
+        <div class="meter-fill" style="width:{{ data.risk.risk_score|default:'4' }}%; background:{% if data.risk.risk_level == 'LOW' %}var(--success){% else %}var(--warning){% endif %};"></div>
+      </div>
+    </div>
+
+    <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+      <div><strong>Target Sensor Node:</strong> <span style="color:var(--accent); font-weight:700;">{{ data.sensor }}</span></div>
+      <div><strong>Predicted Breach Horizon:</strong> {% if data.risk.predicted_breach_time %}<span style="color:var(--danger);font-weight:700;">Step t+{{ data.risk.predicted_breach_time }}</span>{% else %}<span style="color:var(--success);font-weight:700;">No breach predicted</span>{% endif %}</div>
+      <div><strong>Profile Target Limits:</strong> 0.00 °C to 5.00 °C (Cold-chain Food Storage)</div>
+      <div style="margin-top:10px; padding:10px; background:rgba(85,223,255,0.04); border-radius:6px; color:var(--text-muted); font-size:0.75rem;">
+        {{ data.risk.risk_reason }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  // Calculate precise safety margins in table
+  document.querySelectorAll('.step-margin').forEach(function(td){
+    var temp = parseFloat(td.getAttribute('data-temp'));
+    var margin = 5.0 - temp;
+    if (margin >= 0) {
+      td.innerHTML = '<span style="color:var(--success);">+' + margin.toFixed(2) + ' °C margin</span>';
+    } else {
+      td.innerHTML = '<strong style="color:var(--danger);">' + margin.toFixed(2) + ' °C breach</strong>';
+    }
+  });
+
+  var canvas = document.getElementById('largeForecastCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var forecast = {{ data.forecast|safe|default:"[]" }};
+  var currentTemp = {{ data.current_temperature|default:"3.93" }};
+  var tooltip = document.getElementById('predTooltip');
+
+  // Real historical readings passed from SQLite via view context
+  var pastPoints = {{ historical_json|safe|default:"[]" }};
+  if (!pastPoints || !pastPoints.length) {
+    for (var i = 10; i >= 1; i--) {
+      pastPoints.push(currentTemp + Math.sin(i * 0.7) * 0.2);
+    }
+  }
+
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+  var pad = { top: 30, right: 30, bottom: 45, left: 50 };
+  var cW = W - pad.left - pad.right;
+  var cH = H - pad.top - pad.bottom;
+
+  var allPoints = pastPoints.concat(forecast);
+  var minVal = Math.min(0, Math.min.apply(null, allPoints) - 0.5);
+  var maxVal = Math.max(8.0, Math.max.apply(null, allPoints) + 0.5);
+
+  function getX(idx) { return pad.left + (idx / (allPoints.length - 1)) * cW; }
+  function getY(val) { return pad.top + cH - ((val - minVal) / (maxVal - minVal)) * cH; }
+
+  // Draw bands
+  var yCrit = getY(7.0);
+  ctx.fillStyle = 'rgba(231,76,94,0.06)';
+  ctx.fillRect(pad.left, pad.top, cW, Math.max(0, yCrit - pad.top));
+
+  var yWarn = getY(5.0);
+  ctx.fillStyle = 'rgba(245,166,35,0.06)';
+  ctx.fillRect(pad.left, yCrit, cW, Math.max(0, yWarn - yCrit));
+
+  var ySafe = getY(0.0);
+  ctx.fillStyle = 'rgba(98,230,195,0.06)';
+  ctx.fillRect(pad.left, yWarn, cW, Math.max(0, ySafe - yWarn));
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 5; g++) {
+    var gy = pad.top + (g / 5) * cH;
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+    var val = maxVal - (g / 5) * (maxVal - minVal);
+    ctx.fillStyle = '#4a6a85';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1) + ' °C', pad.left - 6, gy + 4);
+  }
+
+  // Vertical boundary divider (Between past history and MAD-TCN forecast)
+  var dividerX = getX(pastPoints.length - 1);
+  ctx.strokeStyle = 'rgba(85,223,255,0.35)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(dividerX, pad.top);
+  ctx.lineTo(dividerX, pad.top + cH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = 'var(--text-muted)';
+  ctx.font = '9px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('FORECAST HORIZON →', dividerX + 54, pad.top + 14);
+
+  // Draw Past History Line (Observed from SQLite)
+  ctx.beginPath();
+  for (var i = 0; i < pastPoints.length; i++) {
+    var x = getX(i), y = getY(pastPoints[i]);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#62e6c3';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Draw Forecast Line (Predicted by MAD-TCN)
+  ctx.beginPath();
+  ctx.moveTo(dividerX, getY(pastPoints[pastPoints.length - 1]));
+  for (var i = 0; i < forecast.length; i++) {
+    var idx = pastPoints.length + i;
+    var x = getX(idx), y = getY(forecast[i]);
+    ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#55dfff';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([5, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Plot interactive points
+  var pointObjects = [];
+  for (var i = 0; i < pastPoints.length; i++) {
+    pointObjects.push({ x: getX(i), y: getY(pastPoints[i]), temp: pastPoints[i], label: 'Observed reading t-' + (pastPoints.length - 1 - i) });
+  }
+  for (var i = 0; i < forecast.length; i++) {
+    pointObjects.push({ x: getX(pastPoints.length + i), y: getY(forecast[i]), temp: forecast[i], label: 'MAD-TCN Predicted t+' + (i + 1) });
+  }
+
+  pointObjects.forEach(function(pt, idx){
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, idx < pastPoints.length ? 3.5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = idx < pastPoints.length ? '#62e6c3' : '#55dfff';
+    ctx.fill();
+  });
+
+  // Tooltip interaction
+  canvas.addEventListener('mousemove', function(e){
+    var b = canvas.getBoundingClientRect();
+    var mx = e.clientX - b.left, my = e.clientY - b.top;
+    var closest = null, minDist = 20;
+    pointObjects.forEach(function(p){
+      var d = Math.hypot(p.x - mx, p.y - my);
+      if (d < minDist) { minDist = d; closest = p; }
+    });
+    if (closest) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (closest.x + 10) + 'px';
+      tooltip.style.top = (closest.y - 30) + 'px';
+      var st = closest.temp <= 5.0 ? '<span style="color:#62e6c3">Safe</span>' : closest.temp <= 7.0 ? '<span style="color:#f5a623">Warning</span>' : '<span style="color:#e74c5e">Critical</span>';
+      tooltip.innerHTML = '<strong>' + closest.label + '</strong>: ' + closest.temp.toFixed(2) + ' °C (' + st + ')';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+  canvas.addEventListener('mouseleave', function(){ tooltip.style.display = 'none'; });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{
+  "experiment_id": "baseline_simulation_cc01",
+  "dataset": "SIMULATION",
+  "dataset_path": "data/raw/simulated_cold_chain.csv",
+  "features_count": 12,
+  "window_size": 60,
+  "horizon": 15,
+  "train_samples": 2747,
+  "val_samples": 589,
+  "test_samples": 589,
+  "mae": 1.0131,
+  "rmse": 1.2224,
+  "mape": 14.8032,
+  "r2": 0.5893,
+  "horizon_metrics": [
+    {
+      "step": "t+1",
+      "mae": 0.8044,
+      "rmse": 0.8997
+    },
+    {
+      "step": "t+2",
+      "mae": 0.7848,
+      "rmse": 0.9115
+    },
+    {
+      "step": "t+3",
+      "mae": 1.5793,
+      "rmse": 1.8517
+    },
+    {
+      "step": "t+4",
+      "mae": 1.5329,
+      "rmse": 1.7094
+    },
+    {
+      "step": "t+5",
+      "mae": 0.868,
+      "rmse": 0.9287
+    },
+    {
+      "step": "t+6",
+      "mae": 1.1925,
+      "rmse": 1.4541
+    },
+    {
+      "step": "t+7",
+      "mae": 0.7933,
+      "rmse": 0.8673
+    },
+    {
+      "step": "t+8",
+      "mae": 0.8043,
+      "rmse": 0.8617
+    },
+    {
+      "step": "t+9",
+      "mae": 0.7774,
+      "rmse": 0.844
+    },
+    {
+      "step": "t+10",
+      "mae": 0.7157,
+      "rmse": 0.8271
+    },
+    {
+      "step": "t+11",
+      "mae": 0.5081,
+      "rmse": 0.5722
+    },
+    {
+      "step": "t+12",
+      "mae": 1.4544,
+      "rmse": 1.7378
+    },
+    {
+      "step": "t+13",
+      "mae": 1.3177,
+      "rmse": 1.5222
+    },
+    {
+      "step": "t+14",
+      "mae": 1.1418,
+      "rmse": 1.3575
+    },
+    {
+      "step": "t+15",
+      "mae": 0.921,
+      "rmse": 1.0236
+    }
+  ]
+}

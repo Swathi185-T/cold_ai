@@ -80,7 +80,7 @@
       <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
         <div class="stat-label">Estimated Energy</div>
         <div style="font-size:1.4rem; font-weight:800; color:var(--accent); margin:4px 0;">{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</div>
-        <div class="stat-hint">Simulated consumption</div>
+        <div class="stat-hint"><span class="badge" style="font-size:0.6rem; padding:2px 6px;">ESTIMATED / SIMULATED</span></div>
       </div>
       <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
         <div class="stat-label">Safety Risk Score</div>
@@ -103,10 +103,47 @@
   </div>
 </div>
 
+<!-- EMPIRICAL COMPARISON EXPERIMENT -->
+<div class="card" style="margin-top:20px; border-left:4px solid var(--success);">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Empirical Benchmark: Method A (Current-State) vs Method B (Prediction-Guided NSGA-II)</div>
+      <div class="card-subtitle">Measured experimental results over 50 operational cold-chain cycles (reports/nsga2_comparison/nsga2_comparison_report.md)</div>
+    </div>
+    <span class="badge badge-success">Measured Research Evidence</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:8px;">
+    <div style="background:rgba(6,16,26,0.6); padding:14px; border-radius:8px; border:1px solid var(--border-subtle);">
+      <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Method A: Current-State Reactive</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--warning); margin:6px 0;">0.5561 kWh / cycle</div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.5;">
+        • Mean Compressor Duty: 68.5%<br>
+        • Mean Pareto Solutions: 35.8<br>
+        • Optimization Solve Time: ~294 ms<br>
+        • Mode: Reacts only when threshold breached
+      </div>
+    </div>
+    <div style="background:rgba(6,16,26,0.6); padding:14px; border-radius:8px; border:1px solid var(--border-accent);">
+      <div style="font-size:0.75rem; font-weight:700; color:var(--accent); text-transform:uppercase;">Method B: Prediction-Guided NSGA-II (Ours)</div>
+      <div style="font-size:1.2rem; font-weight:800; color:var(--success); margin:6px 0;">0.4471 kWh / cycle <span style="font-size:0.75rem; color:var(--success);">(19.6% Savings)</span></div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.5;">
+        • Mean Compressor Duty: 54.8%<br>
+        • Mean Pareto Solutions: 43.3<br>
+        • Optimization Solve Time: ~303 ms<br>
+        • Mode: Preemptive modulation using MAD-TCN
+      </div>
+      <div style="font-size:0.7rem; color:var(--warning); margin-top:8px; padding:6px; background:rgba(255,170,0,0.08); border-radius:4px; line-height:1.4;">
+        ⚠ <strong>Trade-off</strong>: Method B has <strong>182.6% more thermal violations</strong> (434.9 vs 153.9 °C·steps) than Method A.
+        Energy savings come at the cost of more frequent temperature excursions. See full report for analysis.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TECHNICAL PIPELINE COMPARISON -->
 <div class="card" style="margin-top:16px;">
   <div class="card-header">
-    <div class="card-title">Why Prediction-Guided NSGA-II Outperforms Reactive Control</div>
+    <div class="card-title">Prediction-Guided vs Reactive Control: Energy–Safety Trade-off</div>
     <span class="badge">Research Rationale</span>
   </div>
   <table class="data-table">

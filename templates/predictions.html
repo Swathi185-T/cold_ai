@@ -10,8 +10,19 @@
   </div>
   <div style="display:flex; gap:8px; align-items:center;">
     <span class="badge" style="font-size:0.75rem;">Node: <strong>{{ data.sensor }}</strong></span>
-    <span class="badge badge-success">PyTorch CPU Inference</span>
+    <span class="badge badge-success">SIMULATION BASELINE</span>
+    <span class="badge">PyTorch CPU</span>
   </div>
+</div>
+
+<!-- DATASET CONTEXT BAR -->
+<div class="card" style="margin-bottom:20px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-left:3px solid var(--accent); background:rgba(85,223,255,0.03);">
+  <div style="font-size:0.8rem; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div><span style="color:var(--text-muted);">Active Dataset:</span> <strong>Simulated Cold-Chain Telemetry (CC-01)</strong></div>
+    <div><span style="color:var(--text-muted);">Classification:</span> <span class="badge badge-success" style="font-size:0.65rem;">SIMULATION</span></div>
+    <div><span style="color:var(--text-muted);">External Benchmark:</span> <span class="badge" style="font-size:0.65rem;">IoT Readings: 0.7576 °C MAE</span></div>
+  </div>
+  <a href="/datasets/" class="badge" style="text-decoration:none; font-size:0.72rem; padding:4px 10px;">Switch / View All 5 Public Datasets →</a>
 </div>
 
 <!-- MODEL METRICS ROW -->

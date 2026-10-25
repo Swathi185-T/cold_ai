@@ -1,0 +1,370 @@
+{% extends "base_control_center.html" %}
+
+{% block title %}AI Cold-Chain Operations Center | COLDCHAIN AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 class="page-title">AI Cold-Chain Operations Center</h1>
+    <div class="card-subtitle">Real-time predictive telemetry, temporal risk evaluation, and multi-objective decision support</div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <span class="badge" style="font-size:0.75rem;">Analyzed Node: <strong style="color:var(--accent);">{{ data.sensor }}</strong></span>
+    <span class="badge badge-success">Telemetry Sync</span>
+  </div>
+</div>
+
+<!-- KPI ROW -->
+<section class="grid-4">
+  <div class="card">
+    <div class="stat-label">Active Sensors</div>
+    <div class="stat-value">{{ sensor_count }}</div>
+    <div class="stat-hint">Simulation fleet online (CC-01..03)</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Current Temperature</div>
+    <div class="stat-value">{{ data.current_temperature|floatformat:2 }} °C</div>
+    <div class="stat-hint">
+      {% if data.current_temperature >= 0 and data.current_temperature <= 5 %}
+        <span style="color:var(--success);">Within safe range (0–5°C)</span>
+      {% else %}
+        <span style="color:var(--warning);">Outside standard target</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Future Risk</div>
+    <div class="stat-value {% if data.risk.risk_level == 'LOW' %}green{% elif data.risk.risk_level == 'MEDIUM' %}yellow{% else %}red{% endif %}">
+      {{ data.risk.risk_level }}
+    </div>
+    <div class="stat-hint">Score: {{ data.risk.risk_score|floatformat:2 }} / 100</div>
+  </div>
+  <div class="card">
+    <div class="stat-label">Estimated Energy</div>
+    <div class="stat-value">{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</div>
+    <div class="stat-hint">Estimated / simulated consumption</div>
+  </div>
+</section>
+
+<!-- MAIN FORECAST + RISK / RECOMMENDATION -->
+<div class="grid-2">
+  <!-- FORECAST CHART -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">15-Step Temperature Forecast</div>
+        <div class="card-subtitle">MAD-TCN deep temporal convolution outlook</div>
+      </div>
+      <span class="badge">15 Steps</span>
+    </div>
+
+    <div style="position:relative; width:100%; height:300px;">
+      <canvas id="dashboardForecastCanvas"></canvas>
+      <div id="forecastTooltip" style="position:absolute; display:none; background:rgba(6,16,26,0.92); border:1px solid var(--border-accent); border-radius:6px; padding:6px 10px; font-size:0.75rem; pointer-events:none; z-index:10;"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.72rem; color:var(--text-muted); flex-wrap:wrap; gap:8px;">
+      <span><span style="display:inline-block;width:10px;height:10px;background:rgba(98,230,195,0.25);border:1px solid var(--success);margin-right:4px;"></span>Safe Zone (0.0–5.0°C)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:rgba(245,166,35,0.25);border:1px solid var(--warning);margin-right:4px;"></span>Warning (5.0–7.0°C)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:rgba(231,76,94,0.25);border:1px solid var(--danger);margin-right:4px;"></span>Critical (&gt;7.0°C)</span>
+    </div>
+  </div>
+
+  <!-- FUTURE RISK & RECOMMENDATION -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <!-- RISK CARD -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Future Risk Evaluation</div>
+          <div class="card-subtitle">Derived from predicted trajectory vs Food profile</div>
+        </div>
+        <span class="badge {% if data.risk.risk_level == 'LOW' %}badge-success{% else %}badge-warning{% endif %}">{{ data.risk.risk_level }}</span>
+      </div>
+
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <div style="font-size:2rem; font-weight:900; color:{% if data.risk.risk_level == 'LOW' %}var(--success){% else %}var(--warning){% endif %};">
+          {{ data.risk.risk_score|floatformat:2 }}
+        </div>
+        <div style="font-size:0.8rem; color:var(--text-secondary);">Risk Index (0–100 Scale)</div>
+      </div>
+
+      <div class="meter-bar">
+        <div class="meter-fill" style="width:{{ data.risk.risk_score|default:'4' }}%; background:{% if data.risk.risk_level == 'LOW' %}var(--success){% else %}var(--warning){% endif %};"></div>
+      </div>
+
+      <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+        <div><strong>Safe Profile Limits:</strong> 0.0 °C to 5.0 °C</div>
+        <div><strong>Predicted Breach:</strong> {% if data.risk.predicted_breach_time %}<span style="color:var(--danger);font-weight:700;">Step t+{{ data.risk.predicted_breach_time }}</span>{% else %}<span style="color:var(--success);font-weight:700;">None predicted</span>{% endif %}</div>
+        <div style="margin-top:6px; color:var(--text-muted); font-size:0.75rem;">{{ data.risk.risk_reason }}</div>
+      </div>
+    </div>
+
+    <!-- AI RECOMMENDATION CARD -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">AI Decision Recommendation</div>
+          <div class="card-subtitle">Guided by future risk minimization &amp; energy trade-off</div>
+        </div>
+        {% if data.risk.risk_level == 'LOW' %}
+          <span class="badge badge-success">SAFE TO CONTINUE</span>
+        {% else %}
+          <span class="badge badge-warning">ATTENTION REQUIRED</span>
+        {% endif %}
+      </div>
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div>
+          <div class="stat-label">Cooling Intensity</div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--accent);">{{ data.recommended_solution.cooling_intensity|floatformat:0 }}%</div>
+        </div>
+        <div>
+          <div class="stat-label">Compressor Duty</div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--accent);">{{ data.recommended_solution.compressor_duty_cycle|floatformat:0 }}%</div>
+        </div>
+        <div>
+          <div class="stat-label">Expected Temp</div>
+          <div style="font-size:1.1rem; font-weight:800; color:var(--success);">{{ data.recommended_solution.expected_temperature|floatformat:2 }} °C</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.6; border-top:1px solid var(--border-subtle); padding-top:10px;">
+        {{ data.recommended_solution.explanation }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PARETO OPTIMIZATION SECTION -->
+<div class="card" style="margin-top:16px;">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Prediction-Guided NSGA-II Pareto Optimization</div>
+      <div class="card-subtitle">Non-dominated solution frontier for Cooling Intensity &amp; Compressor Duty vs Safety Risk</div>
+    </div>
+    <span class="badge">{{ data.pareto_solutions|length }} NON-DOMINATED SOLUTION{{ data.pareto_solutions|length|pluralize }}</span>
+  </div>
+
+  <div class="grid-2" style="align-items:center;">
+    <div style="position:relative; width:100%; height:260px;">
+      <canvas id="dashboardParetoCanvas"></canvas>
+    </div>
+    <div>
+      <div style="background:rgba(85,223,255,0.03); border:1px solid var(--border-accent); border-radius:10px; padding:18px;">
+        <div style="font-size:0.75rem; font-weight:800; color:var(--success); text-transform:uppercase; margin-bottom:8px;">
+          ✓ Selected Non-Dominated Solution
+        </div>
+        <table class="data-table">
+          <tr><th>Parameter</th><th>Value</th></tr>
+          <tr><td>Cooling Intensity</td><td><strong>{{ data.recommended_solution.cooling_intensity|floatformat:0 }}%</strong></td></tr>
+          <tr><td>Compressor Duty Cycle</td><td><strong>{{ data.recommended_solution.compressor_duty_cycle|floatformat:0 }}%</strong></td></tr>
+          <tr><td>Target Temp Offset</td><td><strong>{{ data.recommended_solution.target_temperature_offset|floatformat:3 }} °C</strong></td></tr>
+          <tr><td>Estimated Energy</td><td><strong>{{ data.recommended_solution.estimated_energy_kwh|floatformat:3 }} kWh</strong></td></tr>
+          <tr><td>Safety Risk Score</td><td><strong>{{ data.recommended_solution.safety_risk|floatformat:2 }}</strong></td></tr>
+          <tr><td>Expected Chamber Temp</td><td><strong>{{ data.recommended_solution.expected_temperature|floatformat:2 }} °C</strong></td></tr>
+        </table>
+        <div style="font-size:0.68rem; color:var(--text-muted); margin-top:10px;">
+          * Only actual non-dominated solutions are presented. No artificial points are fabricated.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  /* Render Forecast Chart */
+  var canvas = document.getElementById('dashboardForecastCanvas');
+  if (canvas) {
+    var ctx = canvas.getContext('2d');
+    var forecast = {{ data.forecast|safe|default:"[]" }};
+    var currentTemp = {{ data.current_temperature|default:"3.93" }};
+    var tooltip = document.getElementById('forecastTooltip');
+
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    var W = rect.width, H = rect.height;
+    var pad = { top: 25, right: 25, bottom: 40, left: 45 };
+    var cW = W - pad.left - pad.right;
+    var cH = H - pad.top - pad.bottom;
+
+    var allVals = [currentTemp].concat(forecast);
+    var minVal = Math.min(0, Math.min.apply(null, allVals) - 1);
+    var maxVal = Math.max(8, Math.max.apply(null, allVals) + 1);
+
+    function getX(i) { return pad.left + (i / forecast.length) * cW; }
+    function getY(v) { return pad.top + cH - ((v - minVal) / (maxVal - minVal)) * cH; }
+
+    /* Draw Zones */
+    // Critical (>7.0)
+    var yCrit = getY(7.0);
+    ctx.fillStyle = 'rgba(231,76,94,0.08)';
+    ctx.fillRect(pad.left, pad.top, cW, Math.max(0, yCrit - pad.top));
+
+    // Warning (5.0 - 7.0)
+    var yWarn = getY(5.0);
+    ctx.fillStyle = 'rgba(245,166,35,0.08)';
+    ctx.fillRect(pad.left, yCrit, cW, Math.max(0, yWarn - yCrit));
+
+    // Safe (0.0 - 5.0)
+    var ySafe = getY(0.0);
+    ctx.fillStyle = 'rgba(98,230,195,0.08)';
+    ctx.fillRect(pad.left, yWarn, cW, Math.max(0, ySafe - yWarn));
+
+    /* Grid lines */
+    ctx.strokeStyle = 'rgba(85,223,255,0.06)';
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 4; g++) {
+      var gy = pad.top + (g / 4) * cH;
+      ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(pad.left + cW, gy); ctx.stroke();
+      var val = maxVal - (g / 4) * (maxVal - minVal);
+      ctx.fillStyle = '#4a6a85';
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'right';
+      ctx.fillText(val.toFixed(1) + '°C', pad.left - 6, gy + 4);
+    }
+
+    /* Draw Trajectory Line */
+    ctx.beginPath();
+    ctx.moveTo(getX(0), getY(currentTemp));
+    for (var i = 0; i < forecast.length; i++) {
+      ctx.lineTo(getX(i + 1), getY(forecast[i]));
+    }
+    ctx.strokeStyle = '#55dfff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    /* Glow */
+    ctx.strokeStyle = 'rgba(85,223,255,0.2)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    /* Draw Points */
+    var points = [{x: getX(0), y: getY(currentTemp), temp: currentTemp, label: 'Observed'}];
+    for (var i = 0; i < forecast.length; i++) {
+      points.push({x: getX(i + 1), y: getY(forecast[i]), temp: forecast[i], label: 't+' + (i + 1)});
+    }
+
+    points.forEach(function(pt, idx){
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, idx === 0 ? 5 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = idx === 0 ? '#62e6c3' : '#55dfff';
+      ctx.fill();
+    });
+
+    /* Hover tooltips */
+    canvas.addEventListener('mousemove', function(e){
+      var b = canvas.getBoundingClientRect();
+      var mx = e.clientX - b.left, my = e.clientY - b.top;
+      var closest = null, minDist = 20;
+      points.forEach(function(p){
+        var d = Math.hypot(p.x - mx, p.y - my);
+        if (d < minDist) { minDist = d; closest = p; }
+      });
+      if (closest) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (closest.x + 10) + 'px';
+        tooltip.style.top = (closest.y - 30) + 'px';
+        var status = closest.temp <= 5 ? '<span style="color:#62e6c3">Safe</span>' : closest.temp <= 7 ? '<span style="color:#f5a623">Warning</span>' : '<span style="color:#e74c5e">Critical</span>';
+        tooltip.innerHTML = '<strong>' + closest.label + '</strong>: ' + closest.temp.toFixed(2) + ' °C (' + status + ')';
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+    canvas.addEventListener('mouseleave', function(){ tooltip.style.display = 'none'; });
+  }
+
+  /* Render Pareto Scatter Chart with True Coordinate Mapping */
+  var pCanvas = document.getElementById('dashboardParetoCanvas');
+  if (pCanvas) {
+    var pctx = pCanvas.getContext('2d');
+    var pRect = pCanvas.getBoundingClientRect();
+    var pdpr = window.devicePixelRatio || 1;
+    pCanvas.width = pRect.width * pdpr;
+    pCanvas.height = pRect.height * pdpr;
+    pctx.scale(pdpr, pdpr);
+    var pW = pRect.width, pH = pRect.height;
+    var pPad = { top: 25, right: 30, bottom: 45, left: 60 };
+    var pcW = pW - pPad.left - pPad.right;
+    var pcH = pH - pPad.top - pPad.bottom;
+
+    var solutions = {{ data.pareto_solutions|safe|default:"[]" }};
+
+    pctx.fillStyle = '#0a1929';
+    pctx.fillRect(0, 0, pW, pH);
+
+    // Compute bounds from solutions or defaults
+    var minE = 0.0, maxE = 0.15;
+    var minR = 0.0, maxR = 50.0;
+    if (solutions.length > 0) {
+      var energies = solutions.map(function(s){ return s.estimated_energy_kwh; });
+      var risks = solutions.map(function(s){ return s.safety_risk; });
+      minE = Math.max(0, Math.min.apply(null, energies) - 0.02);
+      maxE = Math.max(0.12, Math.max.apply(null, energies) + 0.03);
+      minR = Math.max(0, Math.min.apply(null, risks) - 2.0);
+      maxR = Math.max(10.0, Math.max.apply(null, risks) + 5.0);
+    }
+
+    function getPX(e) { return pPad.left + ((e - minE) / (maxE - minE)) * pcW; }
+    function getPY(r) { return pPad.top + pcH - ((r - minR) / (maxR - minR)) * pcH; }
+
+    // Grid & Ticks
+    pctx.strokeStyle = 'rgba(85,223,255,0.06)';
+    pctx.lineWidth = 1;
+    for (var g = 0; g <= 4; g++) {
+      var gy = pPad.top + (g / 4) * pcH;
+      pctx.beginPath(); pctx.moveTo(pPad.left, gy); pctx.lineTo(pPad.left + pcW, gy); pctx.stroke();
+      var rVal = maxR - (g / 4) * (maxR - minR);
+      pctx.fillStyle = '#4a6a85';
+      pctx.font = '10px system-ui';
+      pctx.textAlign = 'right';
+      pctx.fillText(rVal.toFixed(1), pPad.left - 8, gy + 4);
+
+      var gx = pPad.left + (g / 4) * pcW;
+      pctx.beginPath(); pctx.moveTo(gx, pPad.top); pctx.lineTo(gx, pPad.top + pcH); pctx.stroke();
+      var eVal = minE + (g / 4) * (maxE - minE);
+      pctx.textAlign = 'center';
+      pctx.fillText(eVal.toFixed(3), gx, pPad.top + pcH + 16);
+    }
+
+    // Axes labels
+    pctx.fillStyle = '#7a9ab5';
+    pctx.font = '10px system-ui';
+    pctx.textAlign = 'center';
+    pctx.fillText('Estimated Energy Consumption (kWh)', pPad.left + pcW/2, pH - 8);
+
+    pctx.save();
+    pctx.translate(14, pPad.top + pcH/2);
+    pctx.rotate(-Math.PI / 2);
+    pctx.fillText('Residual Safety Risk', 0, 0);
+    pctx.restore();
+
+    solutions.forEach(function(s, idx){
+      var px = getPX(s.estimated_energy_kwh);
+      var py = getPY(s.safety_risk);
+
+      pctx.beginPath();
+      pctx.arc(px, py, 14, 0, Math.PI * 2);
+      pctx.fillStyle = 'rgba(98,230,195,0.15)';
+      pctx.fill();
+
+      pctx.beginPath();
+      pctx.arc(px, py, 6, 0, Math.PI * 2);
+      pctx.fillStyle = '#62e6c3';
+      pctx.fill();
+
+      pctx.fillStyle = '#e0ecf5';
+      pctx.font = 'bold 11px system-ui';
+      pctx.textAlign = 'left';
+      pctx.fillText('Pareto Point #' + (idx + 1) + ' (E: ' + s.estimated_energy_kwh.toFixed(3) + ' kWh, Risk: ' + s.safety_risk.toFixed(1) + ')', Math.min(px + 12, pPad.left + pcW - 140), Math.max(py - 10, pPad.top + 14));
+    });
+  }
+})();
+</script>
+{% endblock %}

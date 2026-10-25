@@ -1,0 +1,44 @@
+{
+    "dataset_name": "EVIoT Predictive Maintenance Dataset",
+    "source": "Kaggle (ev-predictive-maintenance-dataset-15min)",
+    "original_path": "D:/COLDCHAIN-AI/Datasets/archive (2)/EV_Predictive_Maintenance_Dataset_15min.csv",
+    "clean_path": "D:/COLDCHAIN-AI/Datasets/04_eviot_predictive_maintenance/eviot_predictive_maintenance.csv",
+    "rows": 175393,
+    "columns": 30,
+    "time_column": "Timestamp",
+    "temperature_columns": [
+        "Battery_Temperature",
+        "Motor_Temperature",
+        "Tire_Temperature",
+        "Ambient_Temperature"
+    ],
+    "humidity_columns": [
+        "Ambient_Humidity"
+    ],
+    "energy_columns": [],
+    "power_columns": [
+        "Power_Consumption"
+    ],
+    "voltage_columns": [
+        "Battery_Voltage"
+    ],
+    "current_columns": [
+        "Battery_Current"
+    ],
+    "sensor_columns": [],
+    "location_columns": [],
+    "anomaly_columns": [
+        "Failure_Probability"
+    ],
+    "failure_columns": [
+        "Maintenance_Type",
+        "RUL",
+        "TTF",
+        "Component_Health_Score"
+    ],
+    "sampling_interval": "15 minutes",
+    "data_type": "PUBLIC_DATASET",
+    "research_role": "High-frequency multi-channel IoT electrical/thermal telemetry and Big Data scalability benchmark.",
+    "cold_chain_relevance": "Analogue: Electric vehicle powertrain telemetry (battery/motor) at 15-minute frequency. Exhibits real physical electrical-thermal coupling, but does NOT represent cold chain transport refrigeration units.",
+    "notes": "175,393 records spanning 2020-2025. Excellent for Big Data pipeline throughput, memory, and multi-sensor feature stress testing."
+}

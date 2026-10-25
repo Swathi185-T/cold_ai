@@ -1,0 +1,33 @@
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Large datasets
+Datasets/_original_downloads/
+Datasets/_processed/
+
+# Training artifacts if large
+*.pt
+*.pth
+
+# Runtime/generated files
+*.log
+*.tmp
+
+# Environment secrets
+.env
+# Python environments and caches
+venv/
+.pytest_cache/
+
+# Large model and checkpoint files
+*.h5
+*.hdf5
+*.onnx
+*.pt
+*.pth
+
+# Secrets
+.env.*
+!.env.example

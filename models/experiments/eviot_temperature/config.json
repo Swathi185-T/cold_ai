@@ -1,0 +1,12 @@
+{
+  "experiment_id": "eviot_temperature",
+  "dataset": "EVIoT Predictive Maintenance Dataset (04_eviot_predictive_maintenance)",
+  "data_type": "PUBLIC_DATASET",
+  "model": "MAD-TCN",
+  "target_variable": "Battery_Temperature",
+  "sequence_length": 60,
+  "forecast_horizon": 15,
+  "batch_size": 64,
+  "epochs": 8,
+  "learning_rate": 0.001
+}

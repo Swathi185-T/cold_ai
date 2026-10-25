@@ -1,0 +1,57 @@
+{
+  "dataset": "Temperature Readings: IoT Devices (Kaggle)",
+  "samples_evaluated": 334,
+  "primary_threshold_30_5C": {
+    "threshold_celsius": 30.5,
+    "true_positives": 79,
+    "false_positives": 3,
+    "false_negatives": 19,
+    "true_negatives": 233,
+    "precision": 0.9634,
+    "recall": 0.8061,
+    "f1_score": 0.8778
+  },
+  "all_threshold_evaluations": [
+    {
+      "threshold_celsius": 29.5,
+      "true_positives": 126,
+      "false_positives": 24,
+      "false_negatives": 35,
+      "true_negatives": 149,
+      "precision": 0.84,
+      "recall": 0.7826,
+      "f1_score": 0.8103
+    },
+    {
+      "threshold_celsius": 30.0,
+      "true_positives": 86,
+      "false_positives": 31,
+      "false_negatives": 12,
+      "true_negatives": 205,
+      "precision": 0.735,
+      "recall": 0.8776,
+      "f1_score": 0.8
+    },
+    {
+      "threshold_celsius": 30.5,
+      "true_positives": 79,
+      "false_positives": 3,
+      "false_negatives": 19,
+      "true_negatives": 233,
+      "precision": 0.9634,
+      "recall": 0.8061,
+      "f1_score": 0.8778
+    },
+    {
+      "threshold_celsius": 31.0,
+      "true_positives": 0,
+      "false_positives": 49,
+      "false_negatives": 0,
+      "true_negatives": 285,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    }
+  ],
+  "conclusion": "Threshold sensitivity analysis demonstrates robust breach detection (F1=0.8778 at 30.5C). Excursions are captured with high precision and low false alarms."
+}

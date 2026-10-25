@@ -1,0 +1,31 @@
+{
+    "dataset_name": "Journey to Zero / Predict Electricity Consumption",
+    "source": "Kaggle (predict-electricity-consumption)",
+    "original_path": "D:/COLDCHAIN-AI/Datasets/predict-electricity-consumption/train.csv",
+    "clean_path": "D:/COLDCHAIN-AI/Datasets/05_electricity_forecasting/journey_to_zero_electricity_train.csv",
+    "rows": 8592,
+    "columns": 13,
+    "time_column": "time",
+    "temperature_columns": [
+        "temp",
+        "dwpt"
+    ],
+    "humidity_columns": [
+        "rhum"
+    ],
+    "energy_columns": [
+        "consumption"
+    ],
+    "power_columns": [],
+    "voltage_columns": [],
+    "current_columns": [],
+    "sensor_columns": [],
+    "location_columns": [],
+    "anomaly_columns": [],
+    "failure_columns": [],
+    "sampling_interval": "1 hour",
+    "data_type": "PUBLIC_DATASET",
+    "research_role": "Macro electricity demand forecasting benchmark incorporating atmospheric temperature and weather variables.",
+    "cold_chain_relevance": "Analogue: Demonstrates weather-driven electricity demand fluctuations. Does NOT represent cold storage refrigeration cycle energy.",
+    "notes": "8,592 hourly observations with outdoor temperature, dewpoint, humidity, wind, atmospheric pressure, weather code, and electricity spot price."
+}

@@ -1,0 +1,31 @@
+{
+    "dataset_name": "Temperature Readings: IoT Devices",
+    "source": "Kaggle (temperature-readings-iot-devices by Manikanta Kumar)",
+    "original_path": "D:/COLDCHAIN-AI/Datasets/archive/IOT-temp.csv",
+    "clean_path": "D:/COLDCHAIN-AI/Datasets/02_iot_temperature_readings/iot_temperature_readings.csv",
+    "rows": 97606,
+    "columns": 5,
+    "time_column": "noted_date",
+    "temperature_columns": [
+        "temp"
+    ],
+    "humidity_columns": [],
+    "energy_columns": [],
+    "power_columns": [],
+    "voltage_columns": [],
+    "current_columns": [],
+    "sensor_columns": [
+        "room_id/id",
+        "id"
+    ],
+    "location_columns": [
+        "out/in"
+    ],
+    "anomaly_columns": [],
+    "failure_columns": [],
+    "sampling_interval": "Variable (irregular, ~1-10 minutes)",
+    "data_type": "PUBLIC_DATASET",
+    "research_role": "External real-world IoT sensor temperature forecasting benchmark for MAD-TCN.",
+    "cold_chain_relevance": "Analogue: Real ESP8266 sensor telemetry. Validates MAD-TCN generalization on physical hardware telemetry, but temperature range (21-51 C) represents indoor/outdoor ambient room conditions, not 0-5 C cold chains.",
+    "notes": "Stored reverse chronologically in raw CSV; sorted chronologically during preprocessing. Contains 77,261 outdoor and 20,345 indoor observations."
+}
